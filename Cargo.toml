@@ -1,0 +1,20 @@
+[package]
+name = "nginx-config"
+description = """
+    A parser, AST and formatter for nginx configuration files.
+"""
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["nginx", "config", "parser"]
+categories = ["parser-implementations"]
+homepage = "https://github.com/tailhook/nginx-config"
+documentation = "https://docs.rs/nginx-config"
+version = "0.2.0"
+authors = ["paul@colomiets.name"]
+
+[dependencies]
+combine = "3.0.0"
+failure = "0.1.1"
+
+[dev-dependencies]
+pretty_assertions = "0.5.1"
