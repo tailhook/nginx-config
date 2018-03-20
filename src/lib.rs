@@ -15,8 +15,12 @@ extern crate combine;
 #[macro_use] extern crate failure;
 #[cfg(test)] #[macro_use] extern crate pretty_assertions;
 
-mod ast;
+pub mod ast;
+mod display;
 mod error;
+mod format;
 mod grammar;
 mod position;
 mod tokenizer;
+
+pub use grammar::parse_main;

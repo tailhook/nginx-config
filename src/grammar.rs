@@ -19,7 +19,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
 
 
 /// Parses a piece of config in "main" context (i.e. top-level)
-pub fn parse(s: &str) -> Result<Main, ParseError> {
+pub fn parse_main(s: &str) -> Result<Main, ParseError> {
     let mut tokens = TokenStream::new(s);
     let (doc, _) = many1(parser(directive))
         .map(|d| Main { directives: d })
