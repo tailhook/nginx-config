@@ -1,3 +1,6 @@
+use std::path::PathBuf;
+use std::net::SocketAddr;
+
 use position::Pos;
 
 
@@ -19,8 +22,73 @@ pub enum WorkerProcesses {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Http {
+    pub position: (Pos, Pos),
+    pub directives: Vec<Directive>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Address {
+    Ip(SocketAddr),
+    StarPort(u16),
+    Port(u16),
+    Unix(PathBuf),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HttpExt {
+    Http2,
+    Spdy,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Listen {
+    pub address: Address,
+    pub default_server: bool,
+    pub ssl: bool,
+    pub ext: Option<HttpExt>,
+    pub proxy_protocol: bool,
+    pub setfib: Option<i32>,
+    pub fastopen: Option<u32>,
+    pub backlog: Option<i32>,
+    pub rcvbuf: Option<u64>,
+    pub sndbuf: Option<u64>,
+    // TODO(tailhook) Not sure
+    // accept_filter: String,
+    pub deferred: bool,
+    pub bind: bool,
+    pub ipv6only: Option<bool>,
+    pub reuseport: bool,
+    // TODO(tailhook) requires complex parser
+    // so_keepalive: Option<KeepAlive>,
+}
+
+impl Listen {
+    pub fn new(address: Address) -> Listen {
+        Listen {
+            address,
+            default_server: false,
+            ssl: false,
+            ext: None,
+            proxy_protocol: false,
+            setfib: None,
+            fastopen: None,
+            backlog: None,
+            rcvbuf: None,
+            sndbuf: None,
+            deferred: false,
+            bind: false,
+            ipv6only: None,
+            reuseport: false,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     Daemon(bool),
     MasterProcess(bool),
     WorkerProcesses(WorkerProcesses),
+    Http(Http),
+    Listen(Listen),
 }

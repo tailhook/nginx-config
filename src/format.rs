@@ -1,3 +1,4 @@
+use std::fmt;
 use std::default::Default;
 
 
@@ -82,6 +83,10 @@ impl<'a> Formatter<'a> {
 
     pub fn write(&mut self, s: &str) {
         self.buf.push_str(s);
+    }
+    pub fn fmt<D: fmt::Display>(&mut self, s: &D) {
+        use std::fmt::Write;
+        write!(&mut self.buf, "{}", s).expect("write never fails");
     }
 
     pub fn into_string(self) -> String {

@@ -37,9 +37,72 @@ impl Displayable for ast::Item {
             }
             WorkerProcesses(ast::WorkerProcesses::Exact(n)) => {
                 f.write("worker_processes ");
-                f.write(&format!("{}", n));
+                f.fmt(&n);
                 f.end();
             }
+            Http(ref h) => {
+                f.write("http ");
+                f.start_block();
+                for dir in &h.directives {
+                    dir.display(f);
+                }
+                f.end_block();
+            }
+            Listen(ref lst) => {
+                lst.display(f);
+            }
+        }
+    }
+}
+
+impl Displayable for ast::Listen {
+    fn display(&self, f: &mut Formatter) {
+        f.indent();
+        f.write("listen ");
+        self.address.display(f);
+        if self.default_server { f.write(" default_server") }
+        if self.ssl { f.write(" ssl") }
+        match self.ext {
+            Some(ast::HttpExt::Http2) => f.write(" http2"),
+            Some(ast::HttpExt::Spdy) => f.write(" spdy"),
+            None => {}
+        }
+        if self.proxy_protocol { f.write(" proxy_protocol") }
+        if let Some(setfib) = self.setfib {
+            f.fmt(&format_args!(" setfib={}", setfib));
+        }
+        if let Some(fastopen) = self.fastopen {
+            f.fmt(&format_args!(" fastopen={}", fastopen));
+        }
+        if let Some(backlog) = self.backlog {
+            f.fmt(&format_args!(" backlog={}", backlog));
+        }
+        if let Some(rcvbuf) = self.rcvbuf {
+            f.fmt(&format_args!(" rcvbuf={}", rcvbuf));
+        }
+        if let Some(sndbuf) = self.sndbuf {
+            f.fmt(&format_args!(" sndbuf={}", sndbuf));
+        }
+        if self.deferred { f.write(" deferred") }
+        if self.bind { f.write(" bind") }
+        if let Some(ipv6only) = self.ipv6only {
+            f.fmt(&format_args!(" ipv6only={}",
+                               if ipv6only { "on" } else { "off" }));
+        }
+        if self.reuseport { f.write(" reuseport") }
+        f.end();
+    }
+}
+
+impl Displayable for ast::Address {
+    fn display(&self, f: &mut Formatter) {
+        use ast::Address::*;
+        match *self {
+            Ip(sa) => f.fmt(&sa),
+            StarPort(p) => f.fmt(&format_args!("*:{}", p)),
+            Port(p) => f.fmt(&p),
+            // TODO(tailhook) escape path
+            Unix(ref path) => f.fmt(&format_args!("unix:{}", path.display())),
         }
     }
 }
@@ -64,4 +127,6 @@ macro_rules! impl_display {
 }
 impl_display!(
     ast::Main,
+    ast::Listen,
+    ast::Address,
 );
