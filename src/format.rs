@@ -21,7 +21,7 @@ pub struct Style {
 impl Default for Style {
     fn default() -> Style {
         Style {
-            indent: 2,
+            indent: 4,
         }
     }
 }
