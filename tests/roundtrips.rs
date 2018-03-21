@@ -16,3 +16,7 @@ fn roundtrip(filename: &str) {
 }
 
 #[test] fn minimal() { roundtrip("minimal"); }
+#[test] fn master_process() { roundtrip("master_process"); }
+#[test] fn worker_processes_auto() { roundtrip("worker_processes_auto"); }
+#[test] fn worker_processes_7() { roundtrip("worker_processes_7"); }
+#[test] fn worker_processes_13() { roundtrip("worker_processes_13"); }

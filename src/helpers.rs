@@ -40,6 +40,10 @@ pub fn ident<'x>(value: &'static str) -> Value<'x> {
     }
 }
 
+pub fn string<'x>() -> TokenMatch<'x> {
+    kind(Kind::String)
+}
+
 impl<'a> Parser for TokenMatch<'a> {
     type Input = TokenStream<'a>;
     type Output = Token<'a>;
