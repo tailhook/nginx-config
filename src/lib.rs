@@ -25,3 +25,4 @@ mod position;
 mod tokenizer;
 
 pub use grammar::parse_main;
+pub use format::Style;
