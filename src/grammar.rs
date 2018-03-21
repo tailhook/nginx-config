@@ -2,10 +2,12 @@ use std::path::PathBuf;
 
 use combine::{eof, many, many1, ParseResult, parser, Parser};
 use combine::{choice, position};
+use combine::error::StreamError;
+use combine::easy::Error;
 
 use ast::{self, Main, Directive, Item};
 use error::ParseError;
-use helpers::{semi, ident, string};
+use helpers::{semi, ident, string, prefix};
 use position::Pos;
 use tokenizer::TokenStream;
 
@@ -34,11 +36,27 @@ pub fn worker_processes<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+enum ListenParts {
+    DefaultServer,
+    Ssl,
+    Ext(ast::HttpExt),
+    ProxyProtocol,
+    SetFib(i32),
+    FastOpen(u32),
+    Backlog(i32),
+    RcvBuf(u64),
+    SndBuf(u64),
+    Deferred,
+    Bind,
+    Ipv6Only(bool),
+    ReusePort,
+}
+
 pub fn listen<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
-    use ast::Listen;
-    use ast::Address;
+    use ast::{Address, Listen, HttpExt};
+    use self::ListenParts::*;
 
     ident("listen")
     .with(string().and_then(|s| -> Result<_, ::combine::easy::Error<_, _>> {
@@ -52,7 +70,47 @@ pub fn listen<'a>(input: &mut TokenStream<'a>)
         };
         Ok(v)
     }))
-    .map(|a| Listen::new(a))
+    .and(many::<Vec<_>, _>(choice((
+        ident("default_server").map(|_| DefaultServer),
+        ident("ssl").map(|_| Ssl),
+        ident("http2").map(|_| Ext(HttpExt::Http2)),
+        ident("spdy").map(|_| Ext(HttpExt::Spdy)),
+        ident("proxy_protocol").map(|_| ProxyProtocol),
+        prefix("setfib=").and_then(|val| val.parse().map(SetFib)),
+        prefix("fastopen=").and_then(|val| val.parse().map(FastOpen)),
+        prefix("backlog=").and_then(|val| val.parse().map(Backlog)),
+        prefix("rcvbuf=").and_then(|val| val.parse().map(RcvBuf)),
+        prefix("sndbuf=").and_then(|val| val.parse().map(SndBuf)),
+        ident("deferred").map(|_| Deferred),
+        ident("bind").map(|_| Bind),
+        prefix("ipv6only=").and_then(|val| Ok(Ipv6Only(match val {
+            "on" => true,
+            "off" => false,
+            _ => return Err(Error::unexpected_message("only on/off supported")),
+        }))),
+        ident("reuseport").map(|_| ReusePort),
+    ))))
+    .map(|(addr, items)| {
+        let mut lst = Listen::new(addr);
+        for item in items {
+            match item {
+                DefaultServer => lst.default_server = true,
+                Ssl => lst.ssl = true,
+                Ext(ext) => lst.ext = Some(ext),
+                ProxyProtocol => lst.proxy_protocol = true,
+                SetFib(v) => lst.setfib = Some(v),
+                FastOpen(v) => lst.fastopen = Some(v),
+                Backlog(v) => lst.backlog = Some(v),
+                RcvBuf(v) => lst.rcvbuf = Some(v),
+                SndBuf(v) => lst.sndbuf = Some(v),
+                Deferred => lst.deferred = true,
+                Bind => lst.bind = true,
+                Ipv6Only(v) => lst.ipv6only = Some(v),
+                ReusePort => lst.reuseport = true,
+            }
+        }
+        return lst;
+    })
     .skip(semi())
     .map(Item::Listen)
     .parse_stream(input)

@@ -21,6 +21,12 @@ pub struct Value<'a> {
     phantom: PhantomData<&'a u8>,
 }
 
+#[derive(Debug, Clone)]
+pub struct Prefix<'a> {
+    value: &'static str,
+    phantom: PhantomData<&'a u8>,
+}
+
 pub fn kind<'x>(kind: Kind) -> TokenMatch<'x> {
     TokenMatch {
         kind: kind,
@@ -36,6 +42,13 @@ pub fn ident<'x>(value: &'static str) -> Value<'x> {
     Value {
         kind: Kind::String,
         value: value,
+        phantom: PhantomData,
+    }
+}
+
+pub fn prefix<'x>(prefix: &'static str) -> Prefix<'x> {
+    Prefix {
+        value: prefix,
         phantom: PhantomData,
     }
 }
@@ -76,6 +89,29 @@ impl<'a> Parser for Value<'a> {
         satisfy(|c: Token<'a>| {
             c.kind == self.kind && c.value == self.value
         }).parse_lazy(input)
+    }
+
+    fn add_error(&mut self,
+        error: &mut Tracked<<Self::Input as StreamOnce>::Error>)
+    {
+        error.error.add_error(Error::Expected(Info::Borrowed(self.value)));
+    }
+}
+
+impl<'a> Parser for Prefix<'a> {
+    type Input = TokenStream<'a>;
+    type Output = &'a str;
+    type PartialState = ();
+
+    #[inline]
+    fn parse_lazy(&mut self, input: &mut Self::Input)
+        -> ConsumedResult<Self::Output, Self::Input>
+    {
+        satisfy(|c: Token<'a>| {
+            c.kind == Kind::String && c.value.starts_with(self.value)
+        })
+        .map(|t: Token<'a>| &t.value[self.value.len()..])
+        .parse_lazy(input)
     }
 
     fn add_error(&mut self,
