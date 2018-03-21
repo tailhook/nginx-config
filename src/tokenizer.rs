@@ -120,23 +120,6 @@ impl<'a> TokenStream<'a> {
                 self.off += 1;
                 Ok((Semicolon, 1))
             }
-            '$' => {
-                // TODO(tailhook) more comprehensive ${variables}
-                while let Some((idx, cur_char)) = iter.next() {
-                    match cur_char {
-                        '_' | 'a'...'z' | 'A'...'Z' | '0'...'9' => continue,
-                        _ => {
-                            self.position.column += idx;
-                            self.off += idx;
-                            return Ok((Variable, idx));
-                        }
-                    }
-                }
-                let len = self.buf.len() - self.off;
-                self.position.column += len;
-                self.off += len;
-                Ok((Variable, len))
-            }
             '"' | '\'' => {
                 let open_quote = cur_char;
                 let mut prev_char = cur_char;
@@ -167,15 +150,24 @@ impl<'a> TokenStream<'a> {
             _ => {  // any other non-whitespace char is also a token
                 let mut prev_char = cur_char;
                 let mut nchars = 1;
-                for (idx, cur_char) in iter {
+                while let Some((idx, cur_char)) = iter.next() {
                     match cur_char {
-                        '\u{feff}' | '\r' | '\t' | '\n' => {
+                        '\r' | '\t' | '\n' => {
                             self.position.column += nchars;
                             self.off += idx+1;
                             return Ok((String, nchars));
                         }
-                        ';' | '#' | '{' | '}' | ' ' |
-                        '\"' | '\'' | '$' => {
+                        '{' if prev_char == '$' => {
+                            while let Some((_, cur_char)) = iter.next() {
+                                nchars += 1;
+                                if cur_char == '}' {
+                                    break;
+                                }
+                            }
+                            // TODO(tailhook) validate end of file
+                        }
+                        ';' | '{' | '}' | ' ' |
+                        '\"' | '\'' => {
                             if prev_char == '\\' {
                             } else {
                                 self.position.column += nchars;
@@ -291,5 +283,16 @@ mod test {
                    [String, String, Semicolon]);
         assert_eq!(tok_str("a { b }"), ["a", "{", "b", "}"]);
         assert_eq!(tok_typ("a { b }"), [String, BlockStart, String, BlockEnd]);
+    }
+    #[test]
+    fn vars() {
+        assert_eq!(tok_str("proxy_pass http://$x;"),
+                   ["proxy_pass", "http://$x", ";"]);
+        assert_eq!(tok_typ("proxy_pass http://$x;"),
+                   [String, String, Semicolon]);
+        assert_eq!(tok_str("proxy_pass http://${a b};"),
+                   ["proxy_pass", "http://${a b}", ";"]);
+        assert_eq!(tok_typ("proxy_pass http://${a b};"),
+                   [String, String, Semicolon]);
     }
 }
