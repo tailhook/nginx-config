@@ -10,12 +10,15 @@ use error::ParseError;
 use helpers::{semi, ident, string, prefix};
 use position::Pos;
 use tokenizer::TokenStream;
+use value::Value;
 
 
 pub fn directives<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
     ident("proxy_pass")
-    .map(|_| unimplemented!())
+    .with((position(), string()).and_then(|(p, v)| Value::parse(p, v)))
+    .skip(semi())
+    .map(Item::ProxyPass)
     .parse_stream(input)
 }

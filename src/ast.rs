@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::net::SocketAddr;
 
 use position::Pos;
+use value::Value;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -99,4 +100,5 @@ pub enum Item {
     Http(Http),
     Server(Server),
     Listen(Listen),
+    ProxyPass(Value),
 }

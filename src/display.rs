@@ -2,6 +2,8 @@ use ast;
 use std::fmt;
 use format::{Displayable, Formatter, Style};
 
+use value;
+
 impl Displayable for ast::Main {
     fn display(&self, f: &mut Formatter) {
         for item in &self.directives {
@@ -57,6 +59,11 @@ impl Displayable for ast::Item {
             }
             Listen(ref lst) => {
                 lst.display(f);
+            }
+            ProxyPass(ref val) => {
+                f.write("proxy_pass ");
+                val.display(f);
+                f.end();
             }
         }
     }
@@ -135,4 +142,5 @@ impl_display!(
     ast::Main,
     ast::Listen,
     ast::Address,
+    value::Value,
 );
