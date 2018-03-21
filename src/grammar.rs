@@ -1,6 +1,8 @@
 use combine::{eof, many1, ParseResult, parser, Parser};
+use combine::{choice, position};
 
-use ast::{Main, Directive};
+use ast::{Main, Directive, Item};
+use helpers::{semi, ident};
 
 use tokenizer::TokenStream;
 use error::ParseError;
@@ -9,12 +11,22 @@ use error::ParseError;
 pub fn directive<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Directive, TokenStream<'a>>
 {
-    /*
-    choice((
-        parser(schema).map(Definition::SchemaDefinition),
-    )).parse_stream(input)
-    */
-    unimplemented!();
+    position()
+    .and(choice((
+        ident("daemon")
+            .with(choice((
+                ident("on").map(|_| true),
+                ident("off").map(|_| false),
+            )))
+            .skip(semi())
+            .map(Item::Daemon),
+
+    )))
+    .map(|(pos, dir)| Directive {
+        position: pos,
+        item: dir,
+    })
+    .parse_stream(input)
 }
 
 

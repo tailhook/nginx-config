@@ -11,8 +11,6 @@ use position::Pos;
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Kind {
     String,
-    Quoted,
-    Variable,
     Semicolon,
     BlockStart,
     BlockEnd,
@@ -130,7 +128,7 @@ impl<'a> TokenStream<'a> {
                         x if x == open_quote && prev_char != '\\' => {
                             self.position.column += nchars;
                             self.off += idx+1;
-                            return Ok((Quoted, idx+1));
+                            return Ok((String, idx+1));
                         }
                         '\n' => {
                             return Err(

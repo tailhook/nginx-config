@@ -20,6 +20,7 @@ mod display;
 mod error;
 mod format;
 mod grammar;
+mod helpers;
 mod position;
 mod tokenizer;
 
