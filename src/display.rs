@@ -16,6 +16,15 @@ impl Displayable for ast::Directive {
     }
 }
 
+fn simple_block(f: &mut Formatter, name: &str, directives: &[ast::Directive]) {
+    f.fmt(&format_args!("{} ", name));
+    f.start_block();
+    for dir in directives {
+        dir.display(f);
+    }
+    f.end_block();
+}
+
 impl Displayable for ast::Item {
     fn display(&self, f: &mut Formatter) {
         use ast::Item::*;
@@ -41,12 +50,10 @@ impl Displayable for ast::Item {
                 f.end();
             }
             Http(ref h) => {
-                f.write("http ");
-                f.start_block();
-                for dir in &h.directives {
-                    dir.display(f);
-                }
-                f.end_block();
+                simple_block(f, "http", &h.directives);
+            }
+            Server(ref s) => {
+                simple_block(f, "server", &s.directives);
             }
             Listen(ref lst) => {
                 lst.display(f);
@@ -57,7 +64,6 @@ impl Displayable for ast::Item {
 
 impl Displayable for ast::Listen {
     fn display(&self, f: &mut Formatter) {
-        f.indent();
         f.write("listen ");
         self.address.display(f);
         if self.default_server { f.write(" default_server") }

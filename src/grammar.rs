@@ -88,6 +88,9 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("http").with(parser(block))
             .map(|(position, directives)| ast::Http { position, directives })
             .map(Item::Http),
+        ident("server").with(parser(block))
+            .map(|(position, directives)| ast::Server { position, directives })
+            .map(Item::Server),
         parser(listen),
     )))
     .map(|(pos, dir)| Directive {

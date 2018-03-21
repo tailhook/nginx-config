@@ -28,6 +28,12 @@ pub struct Http {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Server {
+    pub position: (Pos, Pos),
+    pub directives: Vec<Directive>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Address {
     Ip(SocketAddr),
     StarPort(u16),
@@ -90,5 +96,6 @@ pub enum Item {
     MasterProcess(bool),
     WorkerProcesses(WorkerProcesses),
     Http(Http),
+    Server(Server),
     Listen(Listen),
 }
