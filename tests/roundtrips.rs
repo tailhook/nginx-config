@@ -22,5 +22,6 @@ fn roundtrip(filename: &str) {
 #[test] fn worker_processes_13() { roundtrip("worker_processes_13"); }
 #[test] fn http() { roundtrip("http"); }
 #[test] fn listen() { roundtrip("listen"); }
+#[test] fn proxy() { roundtrip("proxy"); }
 // not working yet
-//#[test] fn few_locations() { roundtrip("few_locations"); }
+// #[test] fn few_locations() { roundtrip("few_locations"); }

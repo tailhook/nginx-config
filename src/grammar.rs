@@ -10,6 +10,7 @@ use error::ParseError;
 use helpers::{semi, ident, string, prefix};
 use position::Pos;
 use tokenizer::TokenStream;
+use proxy;
 
 
 pub fn bool<'a>(input: &mut TokenStream<'a>)
@@ -149,6 +150,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
         parser(listen),
+        parser(proxy::directives),
     )))
     .map(|(pos, dir)| Directive {
         position: pos,

@@ -22,6 +22,7 @@ mod format;
 mod grammar;
 mod helpers;
 mod position;
+mod proxy;
 mod tokenizer;
 
 pub use grammar::parse_main;
