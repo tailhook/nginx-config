@@ -89,8 +89,40 @@ impl Value {
     }
 }
 
+impl Value {
+    fn has_specials(&self) -> bool {
+        use self::Item::*;
+        for item in &self.data {
+            match *item {
+                Literal(ref x) => {
+                    for c in x.chars() {
+                        match c {
+                            ' ' | ';' | '\r' | '\n' | '\t' => {
+                                return true;
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                Variable(_) => {}
+            }
+        }
+        return false;
+    }
+}
+
 impl Displayable for Value {
     fn display(&self, f: &mut Formatter) {
-        unimplemented!();
+        use self::Item::*;
+        if self.has_specials() {
+            unimplemented!();
+        } else {
+            for item in &self.data {
+                match *item {
+                    Literal(ref v) => f.write(v),
+                    Variable(ref v) => { f.write("$"); f.write(v); }
+                }
+            }
+        }
     }
 }
