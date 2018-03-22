@@ -13,12 +13,23 @@ use tokenizer::TokenStream;
 use value::Value;
 
 
+pub fn value<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Value, TokenStream<'a>>
+{
+    (position(), string())
+    .and_then(|(p, v)| Value::parse(p, v))
+    .parse_stream(input)
+}
+
+
 pub fn directives<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
-    ident("proxy_pass")
-    .with((position(), string()).and_then(|(p, v)| Value::parse(p, v)))
-    .skip(semi())
-    .map(Item::ProxyPass)
-    .parse_stream(input)
+    choice((
+        ident("proxy_pass").with(parser(value)).skip(semi())
+            .map(Item::ProxyPass),
+        ident("proxy_set_header").with(parser(value)).and(parser(value))
+            .skip(semi())
+            .map(|(field, value)| Item::ProxySetHeader { field, value }),
+    )).parse_stream(input)
 }

@@ -65,6 +65,13 @@ impl Displayable for ast::Item {
                 val.display(f);
                 f.end();
             }
+            ProxySetHeader { ref field, ref value } => {
+                f.write("proxy_set_header ");
+                field.display(f);
+                f.write(" ");
+                value.display(f);
+                f.end();
+            }
         }
     }
 }

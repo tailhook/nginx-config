@@ -101,4 +101,5 @@ pub enum Item {
     Server(Server),
     Listen(Listen),
     ProxyPass(Value),
+    ProxySetHeader { field: Value, value: Value },
 }
