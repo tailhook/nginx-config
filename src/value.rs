@@ -42,10 +42,9 @@ impl Value {
                     continue;
                 }
                 '$' => {
-                    let vstart = chiter.peek().map(|&(idx, _)| idx)
-                        .unwrap_or(val.len());
-                    if vstart != cur_slice {
-                        buf.push(Literal(val[cur_slice..vstart].to_string()));
+                    let vstart = idx + 1;
+                    if idx != cur_slice {
+                        buf.push(Literal(val[cur_slice..idx].to_string()));
                     }
                     let fchar = chiter.next().map(|(_, c)| c)
                         .ok_or_else(|| Error::unexpected_message(
@@ -65,7 +64,7 @@ impl Value {
                             let now = chiter.peek().map(|&(idx, _)| idx)
                                 .unwrap_or(val.len());
                             buf.push(Variable(
-                                val[vstart+1..now].to_string()));
+                                val[vstart..now].to_string()));
                             cur_slice = now;
                         }
                         _ => {

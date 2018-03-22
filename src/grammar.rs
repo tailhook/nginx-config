@@ -207,6 +207,8 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("server").with(parser(block))
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
+        ident("root").with(parser(value)).skip(semi()).map(Item::Root),
+        ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
         parser(location),
         parser(listen),
         parser(add_header),

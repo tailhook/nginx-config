@@ -26,5 +26,7 @@ fn roundtrip(filename: &str) {
 #[test] fn location() { roundtrip("location"); }
 #[test] fn gzip() { roundtrip("gzip"); }
 #[test] fn add_header() { roundtrip("add_header"); }
+#[test] fn root() { roundtrip("root"); }
+#[test] fn alias() { roundtrip("alias"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

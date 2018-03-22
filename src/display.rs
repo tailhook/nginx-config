@@ -99,6 +99,16 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            Root(ref val) => {
+                f.write("root ");
+                val.display(f);
+                f.end();
+            }
+            Alias(ref val) => {
+                f.write("alias ");
+                val.display(f);
+                f.end();
+            }
         }
     }
 }

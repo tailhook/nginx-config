@@ -137,4 +137,6 @@ pub enum Item {
     Gzip(bool),
     GzipStatic(GzipStatic),
     AddHeader(AddHeader),
+    Root(Value),
+    Alias(Value),
 }
