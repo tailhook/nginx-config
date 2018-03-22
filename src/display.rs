@@ -79,6 +79,16 @@ impl Displayable for ast::Item {
                 value.display(f);
                 f.end();
             }
+            Gzip(opt) => {
+                f.write("gzip ");
+                f.write(if opt { "on" } else { "off" });
+                f.end();
+            }
+            GzipStatic(opt) => {
+                f.write("gzip_static ");
+                f.write(opt.as_str());
+                f.end();
+            }
         }
     }
 }
@@ -178,5 +188,23 @@ impl fmt::Display for ast::LocationPattern {
                 write!(f, "{}", escape(&(String::from("@") + name)))
             }
         }
+    }
+}
+
+impl ast::GzipStatic {
+    fn as_str(&self) -> &str {
+        use ast::GzipStatic::*;
+        match *self {
+            On => "on",
+            Off => "off",
+            Always => "always",
+        }
+    }
+}
+
+
+impl fmt::Display for ast::GzipStatic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.as_str().fmt(f)
     }
 }

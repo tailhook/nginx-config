@@ -109,6 +109,13 @@ pub struct Location {
     pub directives: Vec<Directive>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+pub enum GzipStatic {
+    On,
+    Off,
+    Always,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     Daemon(bool),
@@ -120,4 +127,6 @@ pub enum Item {
     Listen(Listen),
     ProxyPass(Value),
     ProxySetHeader { field: Value, value: Value },
+    Gzip(bool),
+    GzipStatic(GzipStatic),
 }

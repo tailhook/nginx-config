@@ -24,5 +24,6 @@ fn roundtrip(filename: &str) {
 #[test] fn listen() { roundtrip("listen"); }
 #[test] fn proxy() { roundtrip("proxy"); }
 #[test] fn location() { roundtrip("location"); }
+#[test] fn gzip() { roundtrip("gzip"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

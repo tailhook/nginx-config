@@ -20,6 +20,7 @@ mod display;
 mod error;
 mod format;
 mod grammar;
+mod gzip;
 mod helpers;
 mod position;
 mod proxy;

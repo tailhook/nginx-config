@@ -11,6 +11,7 @@ use helpers::{semi, ident, text, string, prefix};
 use position::Pos;
 use tokenizer::{TokenStream, Token};
 use proxy;
+use gzip;
 
 
 pub fn bool<'a>(input: &mut TokenStream<'a>)
@@ -184,6 +185,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(location),
         parser(listen),
         parser(proxy::directives),
+        parser(gzip::directives),
     )))
     .map(|(pos, dir)| Directive {
         position: pos,
