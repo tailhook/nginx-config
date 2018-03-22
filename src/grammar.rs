@@ -1,17 +1,18 @@
 use std::path::PathBuf;
 
 use combine::{eof, many, many1, ParseResult, parser, Parser};
-use combine::{choice, position};
+use combine::{choice, position, optional};
 use combine::error::StreamError;
 use combine::easy::Error;
 
 use ast::{self, Main, Directive, Item};
 use error::ParseError;
+use gzip;
 use helpers::{semi, ident, text, string, prefix};
 use position::Pos;
-use tokenizer::{TokenStream, Token};
 use proxy;
-use gzip;
+use tokenizer::{TokenStream, Token};
+use value::Value;
 
 
 pub fn bool<'a>(input: &mut TokenStream<'a>)
@@ -21,6 +22,14 @@ pub fn bool<'a>(input: &mut TokenStream<'a>)
         ident("on").map(|_| true),
         ident("off").map(|_| false),
     ))
+    .parse_stream(input)
+}
+
+pub fn value<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Value, TokenStream<'a>>
+{
+    (position(), string())
+    .and_then(|(p, v)| Value::parse(p, v))
     .parse_stream(input)
 }
 
@@ -118,6 +127,22 @@ pub fn listen<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn add_header<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    ident("add_header")
+    .with((
+        parser(value),
+        parser(value),
+        optional(ident("always").map(|_| ())),
+    )).map(|(field, value, always)| {
+        ast::AddHeader { field, value, always: always.is_some() }
+    })
+    .skip(semi())
+    .map(Item::AddHeader)
+    .parse_stream(input)
+}
+
 pub fn block<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<((Pos, Pos), Vec<Directive>), TokenStream<'a>>
 {
@@ -184,6 +209,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
             .map(Item::Server),
         parser(location),
         parser(listen),
+        parser(add_header),
         parser(proxy::directives),
         parser(gzip::directives),
     )))

@@ -11,15 +11,7 @@ use helpers::{semi, ident, string, prefix};
 use position::Pos;
 use tokenizer::TokenStream;
 use value::Value;
-
-
-pub fn value<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Value, TokenStream<'a>>
-{
-    (position(), string())
-    .and_then(|(p, v)| Value::parse(p, v))
-    .parse_stream(input)
-}
+use grammar::value;
 
 
 pub fn directives<'a>(input: &mut TokenStream<'a>)

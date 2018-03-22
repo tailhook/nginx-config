@@ -117,6 +117,13 @@ pub enum GzipStatic {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AddHeader {
+    pub field: Value,
+    pub value: Value,
+    pub always: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     Daemon(bool),
     MasterProcess(bool),
@@ -129,4 +136,5 @@ pub enum Item {
     ProxySetHeader { field: Value, value: Value },
     Gzip(bool),
     GzipStatic(GzipStatic),
+    AddHeader(AddHeader),
 }

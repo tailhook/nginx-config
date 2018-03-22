@@ -89,6 +89,16 @@ impl Displayable for ast::Item {
                 f.write(opt.as_str());
                 f.end();
             }
+            AddHeader(ref h) => {
+                f.write("add_header ");
+                h.field.display(f);
+                f.write(" ");
+                h.value.display(f);
+                if h.always {
+                    f.write(" always");
+                }
+                f.end();
+            }
         }
     }
 }
