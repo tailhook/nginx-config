@@ -7,9 +7,9 @@ use combine::easy::Error;
 
 use ast::{self, Main, Directive, Item};
 use error::ParseError;
-use helpers::{semi, ident, string, prefix};
+use helpers::{semi, ident, text, string, prefix};
 use position::Pos;
-use tokenizer::TokenStream;
+use tokenizer::{TokenStream, Token};
 use proxy;
 
 
@@ -133,6 +133,38 @@ pub fn block<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+// A string that forbids variables
+pub fn raw<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<String, TokenStream<'a>>
+{
+    // TODO(tailhook) unquote single and double quotes
+    // error on variables?
+    string().and_then(|t| Ok::<_, Error<_, _>>(t.value.to_string()))
+    .parse_stream(input)
+}
+
+pub fn location<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::LocationPattern::*;
+    ident("location").with(choice((
+        text("=").with(parser(raw).map(Exact)),
+        text("^~").with(parser(raw).map(FinalPrefix)),
+        text("~").with(parser(raw).map(Regex)),
+        text("~*").with(parser(raw).map(RegexInsensitive)),
+        parser(raw)
+            .map(|v| if v.starts_with('*') {
+                Named(v)
+            } else {
+                Prefix(v)
+            }),
+    ))).and(parser(block))
+    .map(|(pattern, (position, directives))| {
+        Item::Location(ast::Location { pattern, position, directives })
+    })
+    .parse_stream(input)
+}
+
 pub fn directive<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Directive, TokenStream<'a>>
 {
@@ -149,6 +181,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("server").with(parser(block))
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
+        parser(location),
         parser(listen),
         parser(proxy::directives),
     )))

@@ -93,12 +93,30 @@ impl Listen {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LocationPattern {
+    Prefix(String),
+    Exact(String),
+    FinalPrefix(String),
+    Regex(String),
+    RegexInsensitive(String),
+    Named(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Location {
+    pub position: (Pos, Pos),
+    pub pattern: LocationPattern,
+    pub directives: Vec<Directive>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     Daemon(bool),
     MasterProcess(bool),
     WorkerProcesses(WorkerProcesses),
     Http(Http),
     Server(Server),
+    Location(Location),
     Listen(Listen),
     ProxyPass(Value),
     ProxySetHeader { field: Value, value: Value },

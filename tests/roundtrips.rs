@@ -23,5 +23,6 @@ fn roundtrip(filename: &str) {
 #[test] fn http() { roundtrip("http"); }
 #[test] fn listen() { roundtrip("listen"); }
 #[test] fn proxy() { roundtrip("proxy"); }
+#[test] fn location() { roundtrip("location"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

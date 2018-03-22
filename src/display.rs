@@ -18,7 +18,9 @@ impl Displayable for ast::Directive {
     }
 }
 
-fn simple_block(f: &mut Formatter, name: &str, directives: &[ast::Directive]) {
+fn simple_block<D: fmt::Display>(f: &mut Formatter, name: D,
+    directives: &[ast::Directive])
+{
     f.fmt(&format_args!("{} ", name));
     f.start_block();
     for dir in directives {
@@ -56,6 +58,11 @@ impl Displayable for ast::Item {
             }
             Server(ref s) => {
                 simple_block(f, "server", &s.directives);
+            }
+            Location(ast::Location { ref pattern, ref directives, .. }) => {
+                simple_block(f,
+                    format_args!("location {}", pattern),
+                    &directives);
             }
             Listen(ref lst) => {
                 lst.display(f);
@@ -145,9 +152,31 @@ macro_rules! impl_display {
         )+
     };
 }
+
 impl_display!(
     ast::Main,
     ast::Listen,
     ast::Address,
     value::Value,
 );
+
+fn escape(s: &str) -> &str {
+    // TODO(tailhook) escape raw value
+    return s
+}
+
+impl fmt::Display for ast::LocationPattern {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use ast::LocationPattern::*;
+        match *self {
+            Prefix(ref p) => f.write_str(escape(p)),
+            Exact(ref p) => write!(f, "= {}", escape(p)),
+            FinalPrefix(ref p) => write!(f, "^~ {}", escape(p)),
+            Regex(ref p) => write!(f, "~ {}", escape(p)),
+            RegexInsensitive(ref p) => write!(f, "~* {}", escape(p)),
+            Named(ref name) => {
+                write!(f, "{}", escape(&(String::from("@") + name)))
+            }
+        }
+    }
+}

@@ -46,6 +46,14 @@ pub fn ident<'x>(value: &'static str) -> Value<'x> {
     }
 }
 
+pub fn text<'x>(value: &'static str) -> Value<'x> {
+    Value {
+        kind: Kind::String,
+        value: value,
+        phantom: PhantomData,
+    }
+}
+
 pub fn prefix<'x>(prefix: &'static str) -> Prefix<'x> {
     Prefix {
         value: prefix,
