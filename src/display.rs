@@ -209,6 +209,8 @@ impl_display!(
     ast::Main,
     ast::Listen,
     ast::Address,
+    ast::Directive,
+    ast::Item,
     value::Value,
 );
 
