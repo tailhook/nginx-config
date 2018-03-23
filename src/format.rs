@@ -76,7 +76,7 @@ impl<'a> Formatter<'a> {
     }
 
     pub fn margin(&mut self) {
-        if !self.buf.is_empty() {
+        if !self.buf.is_empty() && !self.buf.ends_with("{\n") {
             self.buf.push('\n');
         }
     }

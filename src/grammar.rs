@@ -11,7 +11,7 @@ use gzip;
 use helpers::{semi, ident, text, string, prefix};
 use position::Pos;
 use proxy;
-use tokenizer::{TokenStream, Token};
+use tokenizer::{TokenStream};
 use value::Value;
 
 

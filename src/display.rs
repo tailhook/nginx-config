@@ -21,6 +21,8 @@ impl Displayable for ast::Directive {
 fn simple_block<D: fmt::Display>(f: &mut Formatter, name: D,
     directives: &[ast::Directive])
 {
+    f.margin();
+    f.indent();
     f.fmt(&format_args!("{} ", name));
     f.start_block();
     for dir in directives {
@@ -32,23 +34,26 @@ fn simple_block<D: fmt::Display>(f: &mut Formatter, name: D,
 impl Displayable for ast::Item {
     fn display(&self, f: &mut Formatter) {
         use ast::Item::*;
-        f.indent();
         match *self {
             Daemon(opt) => {
+                f.indent();
                 f.write("daemon ");
                 f.write(if opt { "on" } else { "off" });
                 f.end();
             }
             MasterProcess(opt) => {
+                f.indent();
                 f.write("master_process ");
                 f.write(if opt { "on" } else { "off" });
                 f.end();
             }
             WorkerProcesses(ast::WorkerProcesses::Auto) => {
+                f.indent();
                 f.write("worker_processes auto");
                 f.end();
             }
             WorkerProcesses(ast::WorkerProcesses::Exact(n)) => {
+                f.indent();
                 f.write("worker_processes ");
                 f.fmt(&n);
                 f.end();
@@ -65,14 +70,17 @@ impl Displayable for ast::Item {
                     &directives);
             }
             Listen(ref lst) => {
+                f.indent();
                 lst.display(f);
             }
             ProxyPass(ref val) => {
+                f.indent();
                 f.write("proxy_pass ");
                 val.display(f);
                 f.end();
             }
             ProxySetHeader { ref field, ref value } => {
+                f.indent();
                 f.write("proxy_set_header ");
                 field.display(f);
                 f.write(" ");
@@ -80,16 +88,19 @@ impl Displayable for ast::Item {
                 f.end();
             }
             Gzip(opt) => {
+                f.indent();
                 f.write("gzip ");
                 f.write(if opt { "on" } else { "off" });
                 f.end();
             }
             GzipStatic(opt) => {
+                f.indent();
                 f.write("gzip_static ");
                 f.write(opt.as_str());
                 f.end();
             }
             GzipProxied(ref opt) => {
+                f.indent();
                 f.write("gzip_proxied");
                 for item in opt {
                     f.write(" ");
@@ -98,6 +109,7 @@ impl Displayable for ast::Item {
                 f.end();
             }
             AddHeader(ref h) => {
+                f.indent();
                 f.write("add_header ");
                 h.field.display(f);
                 f.write(" ");
@@ -108,11 +120,13 @@ impl Displayable for ast::Item {
                 f.end();
             }
             Root(ref val) => {
+                f.indent();
                 f.write("root ");
                 val.display(f);
                 f.end();
             }
             Alias(ref val) => {
+                f.indent();
                 f.write("alias ");
                 val.display(f);
                 f.end();

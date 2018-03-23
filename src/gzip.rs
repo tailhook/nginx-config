@@ -1,17 +1,10 @@
-use std::path::PathBuf;
+use combine::{many1, ParseResult, parser, Parser};
+use combine::{choice};
 
-use combine::{eof, many, many1, ParseResult, parser, Parser};
-use combine::{choice, position};
-use combine::error::StreamError;
-use combine::easy::Error;
-
-use ast::{self, Main, Directive, Item};
-use error::ParseError;
+use ast::{Item};
 use grammar::bool;
-use helpers::{semi, ident, string, prefix};
-use position::Pos;
+use helpers::{semi, ident};
 use tokenizer::TokenStream;
-use value::Value;
 
 pub fn gzip_static<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>

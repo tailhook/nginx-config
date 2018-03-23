@@ -1,16 +1,9 @@
-use std::path::PathBuf;
+use combine::{ParseResult, parser, Parser};
+use combine::{choice};
 
-use combine::{eof, many, many1, ParseResult, parser, Parser};
-use combine::{choice, position};
-use combine::error::StreamError;
-use combine::easy::Error;
-
-use ast::{self, Main, Directive, Item};
-use error::ParseError;
-use helpers::{semi, ident, string, prefix};
-use position::Pos;
+use ast::{Item};
+use helpers::{semi, ident};
 use tokenizer::TokenStream;
-use value::Value;
 use grammar::value;
 
 
