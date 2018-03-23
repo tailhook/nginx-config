@@ -27,5 +27,5 @@ mod proxy;
 mod tokenizer;
 mod value;
 
-pub use grammar::parse_main;
+pub use grammar::{parse_main, parse_directives};
 pub use format::Style;

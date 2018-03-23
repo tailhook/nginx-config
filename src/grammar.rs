@@ -224,13 +224,22 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
 
 
 /// Parses a piece of config in "main" context (i.e. top-level)
+///
+/// Currently, this is the same as parse_directives (except wraps everyting
+/// to a `Main` struct), but we expect to
+/// add validation/context checks in this function.
 pub fn parse_main(s: &str) -> Result<Main, ParseError> {
+    parse_directives(s).map(|directives| Main { directives })
+}
+
+/// Parses a piece of config from arbitrary context
+///
+/// This implies no validation of what context directives belong to.
+pub fn parse_directives(s: &str) -> Result<Vec<Directive>, ParseError> {
     let mut tokens = TokenStream::new(s);
     let (doc, _) = many1(parser(directive))
-        .map(|d| Main { directives: d })
         .skip(eof())
         .parse_stream(&mut tokens)
         .map_err(|e| e.into_inner().error)?;
-
     Ok(doc)
 }
