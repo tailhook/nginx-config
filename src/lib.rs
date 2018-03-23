@@ -29,3 +29,4 @@ mod value;
 
 pub use grammar::{parse_main, parse_directives};
 pub use format::Style;
+pub use error::ParseError;
