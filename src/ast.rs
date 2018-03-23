@@ -116,6 +116,20 @@ pub enum GzipStatic {
     Always,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+pub enum GzipProxied {
+    Off,
+    Expired,
+    NoCache,
+    NoStore,
+    Private,
+    NoLastModified,
+    NoEtag,
+    Auth,
+    Any,
+}
+
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AddHeader {
     pub field: Value,
@@ -136,6 +150,7 @@ pub enum Item {
     ProxySetHeader { field: Value, value: Value },
     Gzip(bool),
     GzipStatic(GzipStatic),
+    GzipProxied(Vec<GzipProxied>),
     AddHeader(AddHeader),
     Root(Value),
     Alias(Value),

@@ -89,6 +89,14 @@ impl Displayable for ast::Item {
                 f.write(opt.as_str());
                 f.end();
             }
+            GzipProxied(ref opt) => {
+                f.write("gzip_proxied");
+                for item in opt {
+                    f.write(" ");
+                    f.write(item.as_str());
+                }
+                f.end();
+            }
             AddHeader(ref h) => {
                 f.write("add_header ");
                 h.field.display(f);
@@ -222,8 +230,31 @@ impl ast::GzipStatic {
     }
 }
 
+impl ast::GzipProxied {
+    fn as_str(&self) -> &str {
+        use ast::GzipProxied::*;
+        match *self {
+            Off => "off",
+            Expired => "expired",
+            NoCache => "no-cache",
+            NoStore => "no-store",
+            Private => "private",
+            NoLastModified => "no_last_modified",
+            NoEtag => "no_etag",
+            Auth => "auth",
+            Any => "any",
+        }
+    }
+}
+
 
 impl fmt::Display for ast::GzipStatic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.as_str().fmt(f)
+    }
+}
+
+impl fmt::Display for ast::GzipProxied {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.as_str().fmt(f)
     }

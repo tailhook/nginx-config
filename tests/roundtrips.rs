@@ -25,6 +25,7 @@ fn roundtrip(filename: &str) {
 #[test] fn proxy() { roundtrip("proxy"); }
 #[test] fn location() { roundtrip("location"); }
 #[test] fn gzip() { roundtrip("gzip"); }
+#[test] fn gzip_proxied() { roundtrip("gzip_proxied"); }
 #[test] fn add_header() { roundtrip("add_header"); }
 #[test] fn root() { roundtrip("root"); }
 #[test] fn alias() { roundtrip("alias"); }
