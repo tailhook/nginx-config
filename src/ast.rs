@@ -1,3 +1,5 @@
+//! Abstract Syntax Tree types
+
 #![allow(missing_docs)] // structures are meant to be self-descriptive
 use std::path::PathBuf;
 use std::net::SocketAddr;
