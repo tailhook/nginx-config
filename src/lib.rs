@@ -1,8 +1,8 @@
-//! Nginx Config Parser (unofficial
-//! ===============================
+//! Nginx Config Parser (unofficial)
+//! ================================
 //!
 //! This library contains parser and formatter of nginx config format
-//! as well as AST types.
+//! as well as AST types and visitors.
 //!
 //! [Docs](https://docs.rs/nginx-config/) |
 //! [Github](https://github.com/tailhook/nginx-config/) |
