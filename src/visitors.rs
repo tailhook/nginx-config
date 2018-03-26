@@ -1,3 +1,4 @@
+//! Various visitors for working with AST
 use std::collections::VecDeque;
 
 use ast::Directive;
@@ -40,6 +41,19 @@ impl<'a> Iterator for DirectiveIter<'a> {
                 return Some(x);
             }
             None => None,
+        }
+    }
+}
+
+/// A recursive mutable depth-first visitor directives
+pub fn visit_mutable<F>(dirs: &mut Vec<Directive>, mut f: F)
+    where F: FnMut(&mut Directive)
+{
+    for dir in dirs {
+        f(dir);
+        match dir.item.children_mut() {
+            Some(children) => visit_mutable(children, &mut f),
+            None => {}
         }
     }
 }

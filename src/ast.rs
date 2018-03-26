@@ -6,7 +6,7 @@ use std::net::SocketAddr;
 
 use position::Pos;
 use value::Value;
-use visitors::DirectiveIter;
+use visitors::{DirectiveIter};
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -180,6 +180,28 @@ impl Item {
             Http(ref h) => Some(&h.directives[..]),
             Server(ref s) => Some(&s.directives[..]),
             Location(ref l) => Some(&l.directives[..]),
+            Listen(_) => None,
+            ProxyPass(_) => None,
+            ProxySetHeader {..} => None,
+            Gzip(..) => None,
+            GzipStatic(..) => None,
+            GzipProxied(..) => None,
+            AddHeader(..) => None,
+            Root(..) => None,
+            Alias(..) => None,
+            ServerName(..) => None,
+            Set { .. } => None,
+        }
+    }
+    pub(crate) fn children_mut(&mut self) -> Option<&mut Vec<Directive>> {
+        use self::Item::*;
+        match *self {
+            Daemon(_) => None,
+            MasterProcess(_) => None,
+            WorkerProcesses(_) => None,
+            Http(ref mut h) => Some(&mut h.directives),
+            Server(ref mut s) => Some(&mut s.directives),
+            Location(ref mut l) => Some(&mut l.directives),
             Listen(_) => None,
             ProxyPass(_) => None,
             ProxySetHeader {..} => None,
