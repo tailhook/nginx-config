@@ -2,6 +2,7 @@
 use std::collections::VecDeque;
 
 use ast::Directive;
+use value::Value;
 
 
 /// A deep iterator over all directives in configuration file or a part of it
@@ -15,7 +16,9 @@ impl<'a> DirectiveIter<'a> {
     /// Start depth-first iteration over config
     ///
     /// This is the only constructor so var. But usually you want to use
-    /// `config.directives()` instead.
+    /// [`config.all_directives()`] instead.
+    ///
+    /// [`config.all_directives()`]: ast/fn.all_directives.html
     pub fn depth_first(start: &[Directive]) -> DirectiveIter {
         DirectiveIter {
             cur: None,
@@ -49,11 +52,35 @@ impl<'a> Iterator for DirectiveIter<'a> {
 pub fn visit_mutable<F>(dirs: &mut Vec<Directive>, mut f: F)
     where F: FnMut(&mut Directive)
 {
+    _visit_mutable(dirs, &mut f)
+}
+
+fn _visit_mutable<F>(dirs: &mut Vec<Directive>, f: &mut F)
+    where F: FnMut(&mut Directive)
+{
     for dir in dirs {
         f(dir);
         match dir.item.children_mut() {
-            Some(children) => visit_mutable(children, &mut f),
+            Some(children) => _visit_mutable(children, f),
             None => {}
         }
     }
+}
+
+/// A recursive mutable visitor of all variable values
+///
+/// This function allows to replace all occurrences of some variable.
+/// If `f` returns `None` variable is skipped.
+pub fn replace_vars<'a, F, S>(dirs: &mut Vec<Directive>, mut f: F)
+    where F: FnMut(&str) -> Option<S>,
+          S: AsRef<str> + Into<String> + 'a,
+{
+    let mut inner_visitor = |val: &mut Value| {
+        let ref mut f = f;
+        val.replace_vars(f);
+    };
+    visit_mutable(dirs, |dir: &mut Directive| {
+        let ref mut inner_visitor = inner_visitor;
+        dir.visit_values_mut(inner_visitor);
+    });
 }

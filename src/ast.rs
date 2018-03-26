@@ -4,8 +4,8 @@
 use std::path::PathBuf;
 use std::net::SocketAddr;
 
+pub use value::{Value};
 use position::Pos;
-use value::Value;
 use visitors::{DirectiveIter};
 
 
@@ -149,6 +149,7 @@ pub enum ServerName {
     Regex(String),
 }
 
+/// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     Daemon(bool),
@@ -171,6 +172,7 @@ pub enum Item {
 }
 
 impl Item {
+
     pub(crate) fn children(&self) -> Option<&[Directive]> {
         use self::Item::*;
         match *self {
@@ -193,6 +195,7 @@ impl Item {
             Set { .. } => None,
         }
     }
+
     pub(crate) fn children_mut(&mut self) -> Option<&mut Vec<Directive>> {
         use self::Item::*;
         match *self {
@@ -215,10 +218,66 @@ impl Item {
             Set { .. } => None,
         }
     }
+
+    /// Executes function on all the Value things (not recursively)
+    ///
+    /// This is useful for substituting variables.
+    ///
+    /// The callback isn't called for directives inside the  `{ block }`, so
+    /// this function might be better used with [`visit_mutable`]
+    ///
+    /// [`visit_mutable`]: ../visitors/fn.visit_mutable.html
+    pub(crate) fn visit_values_mut<F>(&mut self, mut f: F)
+        where F: FnMut(&mut Value)
+    {
+        use self::Item::*;
+        match *self {
+            Daemon(_) => {},
+            MasterProcess(_) => {},
+            WorkerProcesses(_) => {},
+            Http(_) => {},
+            Server(_) => {},
+            Location(_) => {},
+            Listen(_) => {},
+            ProxyPass(ref mut v) => f(v),
+            ProxySetHeader { ref mut field, ref mut value } => {
+                f(field);
+                f(value);
+            }
+            Gzip(_) => {},
+            GzipStatic(_) => {},
+            GzipProxied(_) => {},
+            AddHeader(self::AddHeader { ref mut field, ref mut value, .. })
+            => {
+                f(field);
+                f(value);
+            }
+            Root(ref mut v) => f(v),
+            Alias(ref mut v) => f(v),
+            ServerName(_) => {},
+            Set { ref mut value, .. } => f(value),
+        }
+    }
+}
+
+impl Directive {
+    /// Executes function on all the Value things (not recursively)
+    ///
+    /// This is useful for substituting variables.
+    ///
+    /// The callback isn't called for directives inside the  `{ block }`, so
+    /// this function might be better used with [`visit_mutable`]
+    ///
+    /// [`visit_mutable`]: ../visitors/fn.visit_mutable.html
+    pub fn visit_values_mut<F>(&mut self, f: F)
+        where F: FnMut(&mut Value)
+    {
+        self.item.visit_values_mut(f)
+    }
 }
 
 impl Main {
-    pub fn directives(&self) -> DirectiveIter {
+    pub fn all_directives(&self) -> DirectiveIter {
         DirectiveIter::depth_first(&self.directives)
     }
 }

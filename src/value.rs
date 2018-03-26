@@ -189,6 +189,25 @@ impl Value {
         }
         return false;
     }
+
+    /// Replace variable references in this string with literal values
+    pub fn replace_vars<'a, F, S>(&mut self, mut f: F)
+        where F: FnMut(&str) -> Option<S>,
+              S: AsRef<str> + Into<String> + 'a,
+    {
+        use self::Item::*;
+        // TODO(tailhook) join literal blocks
+        for item in &mut self.data {
+            let new_value = match *item {
+                Literal(..) => continue,
+                Variable(ref name) => match f(name) {
+                    Some(value) => value.into(),
+                    None => continue,
+                },
+            };
+            *item = Literal(new_value);
+        }
+    }
 }
 
 impl Displayable for Value {
