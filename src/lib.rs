@@ -13,6 +13,7 @@
 
 extern crate combine;
 #[macro_use] extern crate failure;
+#[macro_use] extern crate matches;
 #[cfg(test)] #[macro_use] extern crate pretty_assertions;
 
 pub mod ast;

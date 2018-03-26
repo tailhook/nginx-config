@@ -166,4 +166,5 @@ pub enum Item {
     Root(Value),
     Alias(Value),
     ServerName(Vec<ServerName>),
+    Set { variable: String, value: Value },
 }

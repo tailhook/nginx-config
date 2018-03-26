@@ -151,6 +151,14 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            Set { ref variable, ref value } => {
+                f.indent();
+                f.write("set $");
+                f.write(variable);
+                f.write(" ");
+                value.display(f);
+                f.end();
+            }
         }
     }
 }
