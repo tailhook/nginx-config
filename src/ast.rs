@@ -6,6 +6,7 @@ use std::net::SocketAddr;
 
 use position::Pos;
 use value::Value;
+use visitors::DirectiveIter;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -167,4 +168,35 @@ pub enum Item {
     Alias(Value),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
+}
+
+impl Item {
+    pub(crate) fn children(&self) -> Option<&[Directive]> {
+        use self::Item::*;
+        match *self {
+            Daemon(_) => None,
+            MasterProcess(_) => None,
+            WorkerProcesses(_) => None,
+            Http(ref h) => Some(&h.directives[..]),
+            Server(ref s) => Some(&s.directives[..]),
+            Location(ref l) => Some(&l.directives[..]),
+            Listen(_) => None,
+            ProxyPass(_) => None,
+            ProxySetHeader {..} => None,
+            Gzip(..) => None,
+            GzipStatic(..) => None,
+            GzipProxied(..) => None,
+            AddHeader(..) => None,
+            Root(..) => None,
+            Alias(..) => None,
+            ServerName(..) => None,
+            Set { .. } => None,
+        }
+    }
+}
+
+impl Main {
+    pub fn directives(&self) -> DirectiveIter {
+        DirectiveIter::depth_first(&self.directives)
+    }
 }

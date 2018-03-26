@@ -27,7 +27,9 @@ mod position;
 mod proxy;
 mod tokenizer;
 mod value;
+mod visitors;
 
 pub use grammar::{parse_main, parse_directives};
 pub use format::Style;
 pub use error::ParseError;
+pub use visitors::DirectiveIter;
