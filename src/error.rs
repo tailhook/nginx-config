@@ -6,12 +6,12 @@ use position::Pos;
 pub type InternalError<'a> = Errors<Token<'a>, Token<'a>, Pos>;
 
 
-/// Error parsing schema
+/// Error parsing config
 ///
 /// This structure is opaque for forward compatibility. We are exploring a
 /// way to improve both error message and API.
 #[derive(Fail, Debug)]
-#[fail(display="schema parse error: {}", _0)]
+#[fail(display="parse error: {}", _0)]
 pub struct ParseError(Errors<String, String, Pos>);
 
 impl<'a> From<InternalError<'a>> for ParseError {
