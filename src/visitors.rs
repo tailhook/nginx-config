@@ -48,7 +48,7 @@ impl<'a> Iterator for DirectiveIter<'a> {
     }
 }
 
-/// A recursive mutable depth-first visitor directives
+/// A recursive mutable depth-first visitor of directives
 pub fn visit_mutable<F>(dirs: &mut Vec<Directive>, mut f: F)
     where F: FnMut(&mut Directive)
 {
