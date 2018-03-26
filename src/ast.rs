@@ -140,6 +140,15 @@ pub struct AddHeader {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ServerName {
+    Exact(String),
+    Suffix(String),
+    StarSuffix(String),
+    StarPrefix(String),
+    Regex(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     Daemon(bool),
     MasterProcess(bool),
@@ -156,4 +165,5 @@ pub enum Item {
     AddHeader(AddHeader),
     Root(Value),
     Alias(Value),
+    ServerName(Vec<ServerName>),
 }

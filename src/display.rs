@@ -131,6 +131,26 @@ impl Displayable for ast::Item {
                 val.display(f);
                 f.end();
             }
+            ServerName(ref items) => {
+                use ast::ServerName::*;
+                f.indent();
+                f.write("server_name");
+                for item in items {
+                    match *item {
+                        Exact(ref v)
+                        => f.fmt(&format_args!(" {}", escape(&v))),
+                        Suffix(ref v)
+                        => f.fmt(&format_args!(" .{}", escape(&v))),
+                        StarSuffix(ref v)
+                        => f.fmt(&format_args!(" *.{}", escape(&v))),
+                        StarPrefix(ref v)
+                        => f.fmt(&format_args!(" {}.*", escape(&v))),
+                        Regex(ref v)
+                        => f.fmt(&format_args!(" ~{}", escape(&v))),
+                    }
+                }
+                f.end();
+            }
         }
     }
 }

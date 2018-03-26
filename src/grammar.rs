@@ -143,6 +143,31 @@ pub fn add_header<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn server_name<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::ServerName::*;
+    ident("server_name")
+    .with(many1(
+        string().map(|t| {
+            if t.value.starts_with("~") {
+                Regex(t.value[1..].to_string())
+            } else if t.value.starts_with("*.") {
+                StarSuffix(t.value[2..].to_string())
+            } else if t.value.ends_with(".*") {
+                StarPrefix(t.value[..t.value.len()-2].to_string())
+            } else if t.value.starts_with(".") {
+                Suffix(t.value[1..].to_string())
+            } else {
+                Exact(t.value.to_string())
+            }
+        })
+    ))
+    .skip(semi())
+    .map(Item::ServerName)
+    .parse_stream(input)
+}
+
 pub fn block<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<((Pos, Pos), Vec<Directive>), TokenStream<'a>>
 {
@@ -212,6 +237,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(location),
         parser(listen),
         parser(add_header),
+        parser(server_name),
         parser(proxy::directives),
         parser(gzip::directives),
     )))
