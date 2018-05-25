@@ -169,6 +169,7 @@ pub enum Item {
     Alias(Value),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
+    ClientMaxBodySize(Value),
 }
 
 impl Item {
@@ -193,6 +194,7 @@ impl Item {
             Alias(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
+            ClientMaxBodySize(..) => None,
         }
     }
 
@@ -216,6 +218,7 @@ impl Item {
             Alias(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
+            ClientMaxBodySize(..) => None,
         }
     }
 
@@ -256,6 +259,7 @@ impl Item {
             Alias(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),
+            ClientMaxBodySize(ref mut v) => f(v),
         }
     }
 }

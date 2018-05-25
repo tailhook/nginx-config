@@ -261,6 +261,8 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(add_header),
         parser(server_name),
         parser(set),
+        ident("client_max_body_size").with(parser(value)).skip(semi())
+            .map(Item::ClientMaxBodySize),
         parser(proxy::directives),
         parser(gzip::directives),
     )))

@@ -159,6 +159,12 @@ impl Displayable for ast::Item {
                 value.display(f);
                 f.end();
             }
+            ClientMaxBodySize(ref val) => {
+                f.indent();
+                f.write("client_max_body_size ");
+                val.display(f);
+                f.end();
+            }
         }
     }
 }
