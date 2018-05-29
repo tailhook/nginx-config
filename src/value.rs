@@ -15,8 +15,8 @@ use tokenizer::Token;
 /// quotes when parsing
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Value {
-    position: Pos,
-    data: Vec<Item>,
+    pub(crate) position: Pos,
+    pub(crate) data: Vec<Item>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

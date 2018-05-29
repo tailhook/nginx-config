@@ -169,6 +169,25 @@ pub struct Map {
     pub patterns: Vec<(MapPattern, Value)>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ErrorPageResponse {
+    /// The response code of a target uri
+    Target,
+    /// Replace with a specified value
+    Replace(u32),
+    /// Replace with a specified redirect (`=` with codes 301,302,303,307,308)
+    Redirect(u32),
+    /// Keep original (bare `=`)
+    Keep,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ErrorPage {
+    pub codes: Vec<u32>,
+    pub response_code: ErrorPageResponse,
+    pub uri: Value,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -187,6 +206,7 @@ pub enum Item {
     AddHeader(AddHeader),
     Root(Value),
     Alias(Value),
+    ErrorPage(ErrorPage),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
     Map(Map),
@@ -226,6 +246,7 @@ impl Item {
             AddHeader(..) => "add_header",
             Root(..) => "root",
             Alias(..) => "alias",
+            ErrorPage(..) => "error_page",
             ServerName(..) => "server_name",
             Set { .. } => "set",
             Map(..) => "map",
@@ -264,6 +285,7 @@ impl Item {
             AddHeader(..) => None,
             Root(..) => None,
             Alias(..) => None,
+            ErrorPage(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
             Map(..) => None,
@@ -302,6 +324,7 @@ impl Item {
             AddHeader(..) => None,
             Root(..) => None,
             Alias(..) => None,
+            ErrorPage(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
             Map(..) => None,
@@ -357,6 +380,7 @@ impl Item {
             }
             Root(ref mut v) => f(v),
             Alias(ref mut v) => f(v),
+            ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
             Include(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),

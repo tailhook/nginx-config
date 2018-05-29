@@ -11,7 +11,7 @@ use gzip;
 use helpers::{semi, ident, text, string, prefix};
 use position::Pos;
 use proxy;
-use tokenizer::{TokenStream};
+use tokenizer::{TokenStream, Token};
 use value::Value;
 
 
@@ -70,7 +70,7 @@ pub fn listen<'a>(input: &mut TokenStream<'a>)
     use self::ListenParts::*;
 
     ident("listen")
-    .with(string().and_then(|s| -> Result<_, ::combine::easy::Error<_, _>> {
+    .with(string().and_then(|s| -> Result<_, Error<_, _>> {
         let v = if s.value.starts_with("unix:") {
             Address::Unix(PathBuf::from(&s.value[6..]))
         } else if s.value.starts_with("*:") {
@@ -319,6 +319,80 @@ pub fn location<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn error_page<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::ErrorPageResponse;
+    use value::Item::*;
+
+    fn lit<'a, 'x>(val: &'a Value) -> Result<&'a str, Error<Token<'x>, Token<'x>>> {
+        if val.data.is_empty() {
+            return Err(Error::unexpected_message(
+                "empty error codes are not supported"));
+        }
+        if val.data.len() > 1 {
+            return Err(Error::unexpected_message(
+                "only last argument of error_codes \
+                can contain variables"));
+        }
+        match val.data[0] {
+            Literal(ref x) => return Ok(x),
+            _ => return Err(Error::unexpected_message(
+                "only last argument of error_codes \
+                can contain variables")),
+        }
+    }
+
+    let is_eq = |val: &Value| -> Result<bool, Error<_, _>> {
+        Ok(lit(val)?.starts_with('='))
+    };
+
+    ident("error_page")
+    .with(many(parser(value)))
+    .and_then(|mut v: Vec<_>| {
+        if v.is_empty() {
+            return Err(Error::unexpected_message(
+                "error_page directive must not be empty"));
+        }
+        let uri = v.pop().unwrap();
+
+        let response_code = if v.last().is_some() && is_eq(v.last().unwrap())? {
+            let dest = v.pop().unwrap();
+            let dest = lit(&dest)?;
+            if dest == "=" {
+                ErrorPageResponse::Keep
+            } else {
+                let code = dest[1..].parse::<u32>()?;
+                match code {
+                    301 | 302 | 303 | 307 | 308
+                    => ErrorPageResponse::Redirect(code),
+                    200...599 => ErrorPageResponse::Replace(code),
+                    _ => return Err(Error::unexpected_message(
+                        format!("invalid response code {}", code))),
+                }
+            }
+        } else {
+            ErrorPageResponse::Target
+        };
+        let mut codes = Vec::new();
+        for code in v {
+            match lit(&code)?.parse::<u32>()? {
+                val@200...599 => codes.push(val),
+                _ => return Err(Error::unexpected_message(
+                    format!("invalid response code {}", code))),
+            }
+        }
+
+        Ok(Item::ErrorPage(::ast::ErrorPage {
+            codes,
+            response_code,
+            uri,
+        }))
+    })
+    .skip(semi())
+    .parse_stream(input)
+}
+
 pub fn openresty<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
@@ -368,6 +442,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
             .map(Item::Server),
         ident("root").with(parser(value)).skip(semi()).map(Item::Root),
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
+        parser(error_page),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
         parser(location),
         parser(listen),

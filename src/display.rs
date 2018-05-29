@@ -231,6 +231,24 @@ impl Displayable for ast::Item {
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }
+            ErrorPage(ref ep) => {
+                use ast::ErrorPageResponse::*;
+                f.indent();
+                f.write("error_page");
+                for code in &ep.codes {
+                    f.write(" ");
+                    f.fmt(code);
+                }
+                match ep.response_code {
+                    Target => {},
+                    Replace(ref code) =>  { f.write(" ="); f.fmt(code); }
+                    Redirect(ref code) => { f.write(" ="); f.fmt(code); }
+                    Keep => { f.write(" ="); }
+                }
+                f.write(" ");
+                ep.uri.display(f);
+                f.end()
+            }
         }
     }
 }
