@@ -213,7 +213,7 @@ impl Value {
 impl Displayable for Value {
     fn display(&self, f: &mut Formatter) {
         use self::Item::*;
-        if self.has_specials() {
+        if self.data.is_empty() || self.has_specials() {
             f.write("\"");
             for item in &self.data {
                 match *item {

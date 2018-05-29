@@ -190,6 +190,87 @@ pub fn set<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn map<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use tokenizer::Kind::{BlockStart, BlockEnd};
+    use helpers::kind;
+    enum Tok {
+        Hostnames,
+        Volatile,
+        Pattern(String, Value),
+        Default(Value),
+        Include(String),
+    }
+    ident("map")
+    .with(parser(value))
+    .and(string().and_then(|t| {
+        let ch1 = t.value.chars().nth(0).unwrap_or(' ');
+        let ch2 = t.value.chars().nth(1).unwrap_or(' ');
+        if ch1 == '$' && matches!(ch2, 'a'...'z' | 'A'...'Z' | '_') &&
+            t.value[2..].chars()
+            .all(|x| matches!(x, 'a'...'z' | 'A'...'Z' | '0'...'9' | '_'))
+        {
+            Ok(t.value[1..].to_string())
+        } else {
+            Err(Error::unexpected_message("invalid variable"))
+        }
+    }))
+    .skip(kind(BlockStart))
+    .and(many(choice((
+        ident("hostnames").map(|_| Tok::Hostnames),
+        ident("volatile").map(|_| Tok::Volatile),
+        ident("default").with(parser(value)).map(|v| Tok::Default(v)),
+        ident("include").with(parser(raw)).map(|v| Tok::Include(v)),
+        parser(raw).and(parser(value)).map(|(s, v)| Tok::Pattern(s, v)),
+    )).skip(semi())))
+    .skip(kind(BlockEnd))
+    .map(|((expression, variable), vec): ((_, _), Vec<Tok>)| {
+        let mut res = ::ast::Map {
+            variable, expression,
+            default: None,
+            hostnames: false,
+            volatile: false,
+            includes: Vec::new(),
+            patterns: Vec::new(),
+        };
+        for val in vec {
+            match val {
+                Tok::Hostnames => res.hostnames = true,
+                Tok::Volatile => res.volatile = true,
+                Tok::Default(v) => res.default = Some(v),
+                Tok::Include(path) => res.includes.push(path),
+                Tok::Pattern(x, targ) => {
+                    use ast::MapPattern::*;
+                    let mut s = &x[..];
+                    if s.starts_with('~') {
+                        res.patterns.push((Regex(s[1..].to_string()), targ));
+                        continue;
+                    } else if s.starts_with('\\') {
+                        s = &s[1..];
+                    }
+                    let pat = if res.hostnames {
+                        if s.starts_with("*.") {
+                            StarSuffix(s[2..].to_string())
+                        } else if s.ends_with(".*") {
+                            StarPrefix(s[..s.len()-2].to_string())
+                        } else if s.starts_with(".") {
+                            Suffix(s[1..].to_string())
+                        } else {
+                            Exact(s.to_string())
+                        }
+                    } else {
+                        Exact(s.to_string())
+                    };
+                    res.patterns.push((pat, targ));
+                }
+            }
+        }
+        Item::Map(res)
+    })
+    .parse_stream(input)
+}
+
 pub fn block<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<((Pos, Pos), Vec<Directive>), TokenStream<'a>>
 {
@@ -293,6 +374,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(add_header),
         parser(server_name),
         parser(set),
+        parser(map),
         ident("client_max_body_size").with(parser(value)).skip(semi())
             .map(Item::ClientMaxBodySize),
         parser(proxy::directives),

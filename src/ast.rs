@@ -149,6 +149,26 @@ pub enum ServerName {
     Regex(String),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MapPattern {
+    Exact(String),
+    Suffix(String),
+    StarSuffix(String),
+    StarPrefix(String),
+    Regex(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Map {
+    pub variable: String,
+    pub expression: Value,
+    pub default: Option<Value>,
+    pub hostnames: bool,
+    pub volatile: bool,
+    pub includes: Vec<String>,
+    pub patterns: Vec<(MapPattern, Value)>,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -169,6 +189,7 @@ pub enum Item {
     Alias(Value),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
+    Map(Map),
     ClientMaxBodySize(Value),
     Include(Value),
     // openresty
@@ -207,6 +228,7 @@ impl Item {
             Alias(..) => "alias",
             ServerName(..) => "server_name",
             Set { .. } => "set",
+            Map(..) => "map",
             ClientMaxBodySize(..) => "client_max_body_size",
             Include(..) => "include",
             // openresty
@@ -244,6 +266,7 @@ impl Item {
             Alias(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
+            Map(..) => None,
             ClientMaxBodySize(..) => None,
             Include(..) => None,
             // openresty
@@ -281,6 +304,7 @@ impl Item {
             Alias(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
+            Map(..) => None,
             ClientMaxBodySize(..) => None,
             Include(..) => None,
             // openresty
@@ -336,6 +360,20 @@ impl Item {
             Include(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),
+            Map(::ast::Map {
+                ref mut expression,
+                ref mut default,
+                ref mut patterns,
+                ..
+            }) => {
+                f(expression);
+                if let Some(ref mut def) = default {
+                    f(def);
+                }
+                for (_, v) in patterns {
+                    f(v);
+                }
+            }
             ClientMaxBodySize(ref mut v) => f(v),
             // openresty
             RewriteByLuaFile(ref mut v) => f(v),

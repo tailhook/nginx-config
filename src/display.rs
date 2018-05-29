@@ -150,10 +150,68 @@ impl Displayable for ast::Item {
             Set { ref variable, ref value } => {
                 f.indent();
                 f.write("set $");
-                f.write(variable);
+                f.write(variable); // TODO(tailhook) check syntax?
                 f.write(" ");
                 value.display(f);
                 f.end();
+            }
+            Map(ref m) => {
+                use ast::MapPattern::*;
+                f.margin();
+                f.indent();
+                f.write("map ");
+                m.expression.display(f);
+                f.write(" $");
+                f.write(&m.variable); // TODO(tailhook) check syntax?
+                f.write(" ");
+                f.start_block();
+                if m.volatile {
+                    f.indent();
+                    f.write("volatile");
+                    f.end();
+                }
+                if m.hostnames {
+                    f.indent();
+                    f.write("hostnames");
+                    f.end();
+                }
+                if let Some(ref def) = m.default {
+                    f.indent();
+                    f.write("default ");
+                    def.display(f);
+                    f.end();
+                }
+                for inc in &m.includes {
+                    f.indent();
+                    f.write("include ");
+                    f.write(escape(inc));
+                    f.end();
+                }
+                for &(ref pat, ref value) in &m.patterns {
+                    f.indent();
+                    match *pat {
+                        Exact(ref v) if matches!(&v[..],
+                            | "volatile"
+                            | "hostnames"
+                            | "default"
+                            | "include"
+                        ) => f.fmt(&format_args!("\\{}", escape(&v))),
+                        Exact(ref v)
+                        => f.fmt(&format_args!("{}", escape(&v))),
+                        Suffix(ref v)
+                        => f.fmt(&format_args!(".{}", escape(&v))),
+                        StarSuffix(ref v)
+                        => f.fmt(&format_args!("*.{}", escape(&v))),
+                        StarPrefix(ref v)
+                        => f.fmt(&format_args!("{}.*", escape(&v))),
+                        Regex(ref v)
+                        => f.fmt(&format_args!("~{}", escape(&v))),
+                    }
+                    f.write(" ");
+                    value.display(f);
+                    f.end();
+                }
+                f.end_block();
             }
             | Root(ref val)
             | Alias(ref val)
