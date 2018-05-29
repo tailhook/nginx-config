@@ -170,9 +170,57 @@ pub enum Item {
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
     ClientMaxBodySize(Value),
+    // openresty
+    RewriteByLuaFile(Value),
+    BalancerByLuaFile(Value),
+    AccessByLuaFile(Value),
+    HeaderFilterByLuaFile(Value),
+    ContentByLuaFile(Value),
+    BodyFilterByLuaFile(Value),
+    LogByLuaFile(Value),
+    LuaNeedRequestBody(Value),
+    SslCertificateByLuaFile(Value),
+    SslSessionFetchByLuaFile(Value),
+    SslSessionStoreByLuaFile(Value),
 }
 
 impl Item {
+
+    pub fn directive_name(&self) -> &'static str {
+        use self::Item::*;
+        match *self {
+            Daemon(..) => "daemon",
+            MasterProcess(..) => "master_process",
+            WorkerProcesses(..) => "worker_processes",
+            Http(..) => "http",
+            Server(..) => "server",
+            Location(..) => "location",
+            Listen(..) => "listen",
+            ProxyPass(..) => "proxy_pass",
+            ProxySetHeader {..} => "proxy_set_header",
+            Gzip(..) => "gzip",
+            GzipStatic(..) => "gzip_static",
+            GzipProxied(..) => "gzip_proxied",
+            AddHeader(..) => "add_header",
+            Root(..) => "root",
+            Alias(..) => "alias",
+            ServerName(..) => "server_name",
+            Set { .. } => "set",
+            ClientMaxBodySize(..) => "client_max_body_size",
+            // openresty
+            RewriteByLuaFile(..) => "rewrite_by_lua_file",
+            BalancerByLuaFile(..) => "balancer_by_lua_file",
+            AccessByLuaFile(..) => "access_by_lua_file",
+            HeaderFilterByLuaFile(..) => "header_filter_by_lua_file",
+            ContentByLuaFile(..) => "content_by_lua_file",
+            BodyFilterByLuaFile(..) => "body_filter_by_lua_file",
+            LogByLuaFile(..) => "log_by_lua_file",
+            LuaNeedRequestBody(..) => "lua_need_request_body",
+            SslCertificateByLuaFile(..) => "ssl_certificate_by_lua_file",
+            SslSessionFetchByLuaFile(..) => "ssl_session_fetch_by_lua_file",
+            SslSessionStoreByLuaFile(..) => "ssl_session_store_by_lua_file",
+        }
+    }
 
     pub(crate) fn children(&self) -> Option<&[Directive]> {
         use self::Item::*;
@@ -195,6 +243,18 @@ impl Item {
             ServerName(..) => None,
             Set { .. } => None,
             ClientMaxBodySize(..) => None,
+            // openresty
+            RewriteByLuaFile(..) => None,
+            BalancerByLuaFile(..) => None,
+            AccessByLuaFile(..) => None,
+            HeaderFilterByLuaFile(..) => None,
+            ContentByLuaFile(..) => None,
+            BodyFilterByLuaFile(..) => None,
+            LogByLuaFile(..) => None,
+            LuaNeedRequestBody(..) => None,
+            SslCertificateByLuaFile(..) => None,
+            SslSessionFetchByLuaFile(..) => None,
+            SslSessionStoreByLuaFile(..) => None,
         }
     }
 
@@ -219,6 +279,18 @@ impl Item {
             ServerName(..) => None,
             Set { .. } => None,
             ClientMaxBodySize(..) => None,
+            // openresty
+            RewriteByLuaFile(..) => None,
+            BalancerByLuaFile(..) => None,
+            AccessByLuaFile(..) => None,
+            HeaderFilterByLuaFile(..) => None,
+            ContentByLuaFile(..) => None,
+            BodyFilterByLuaFile(..) => None,
+            LogByLuaFile(..) => None,
+            LuaNeedRequestBody(..) => None,
+            SslCertificateByLuaFile(..) => None,
+            SslSessionFetchByLuaFile(..) => None,
+            SslSessionStoreByLuaFile(..) => None,
         }
     }
 
@@ -260,6 +332,18 @@ impl Item {
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),
             ClientMaxBodySize(ref mut v) => f(v),
+            // openresty
+            RewriteByLuaFile(ref mut v) => f(v),
+            BalancerByLuaFile(ref mut v) => f(v),
+            AccessByLuaFile(ref mut v) => f(v),
+            HeaderFilterByLuaFile(ref mut v) => f(v),
+            ContentByLuaFile(ref mut v) => f(v),
+            BodyFilterByLuaFile(ref mut v) => f(v),
+            LogByLuaFile(ref mut v) => f(v),
+            LuaNeedRequestBody(ref mut v) => f(v),
+            SslCertificateByLuaFile(ref mut v) => f(v),
+            SslSessionFetchByLuaFile(ref mut v) => f(v),
+            SslSessionStoreByLuaFile(ref mut v) => f(v),
         }
     }
 }

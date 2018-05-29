@@ -31,6 +31,14 @@ fn simple_block<D: fmt::Display>(f: &mut Formatter, name: D,
     f.end_block();
 }
 
+fn one_arg_dir(name: &str, val: &value::Value, f: &mut Formatter) {
+    f.indent();
+    f.write(name);
+    f.write(" ");
+    val.display(f);
+    f.end();
+}
+
 impl Displayable for ast::Item {
     fn display(&self, f: &mut Formatter) {
         use ast::Item::*;
@@ -119,18 +127,6 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
-            Root(ref val) => {
-                f.indent();
-                f.write("root ");
-                val.display(f);
-                f.end();
-            }
-            Alias(ref val) => {
-                f.indent();
-                f.write("alias ");
-                val.display(f);
-                f.end();
-            }
             ServerName(ref items) => {
                 use ast::ServerName::*;
                 f.indent();
@@ -159,11 +155,22 @@ impl Displayable for ast::Item {
                 value.display(f);
                 f.end();
             }
-            ClientMaxBodySize(ref val) => {
-                f.indent();
-                f.write("client_max_body_size ");
-                val.display(f);
-                f.end();
+            | Root(ref val)
+            | Alias(ref val)
+            | ClientMaxBodySize(ref val)
+            | RewriteByLuaFile(ref val)
+            | BalancerByLuaFile(ref val)
+            | AccessByLuaFile(ref val)
+            | HeaderFilterByLuaFile(ref val)
+            | ContentByLuaFile(ref val)
+            | BodyFilterByLuaFile(ref val)
+            | LogByLuaFile(ref val)
+            | LuaNeedRequestBody(ref val)
+            | SslCertificateByLuaFile(ref val)
+            | SslSessionFetchByLuaFile(ref val)
+            | SslSessionStoreByLuaFile(ref val)
+            => {
+                one_arg_dir(self.directive_name(), val, f);
             }
         }
     }

@@ -238,6 +238,37 @@ pub fn location<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn openresty<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::Item::*;
+    choice((
+        ident("rewrite_by_lua_file").with(parser(value)).skip(semi())
+            .map(Item::RewriteByLuaFile),
+        ident("balancer_by_lua_file").with(parser(value)).skip(semi())
+            .map(BalancerByLuaFile),
+        ident("access_by_lua_file").with(parser(value)).skip(semi())
+            .map(AccessByLuaFile),
+        ident("header_filter_by_lua_file").with(parser(value)).skip(semi())
+            .map(HeaderFilterByLuaFile),
+        ident("content_by_lua_file").with(parser(value)).skip(semi())
+            .map(ContentByLuaFile),
+        ident("body_filter_by_lua_file").with(parser(value)).skip(semi())
+            .map(BodyFilterByLuaFile),
+        ident("log_by_lua_file").with(parser(value)).skip(semi())
+            .map(LogByLuaFile),
+        ident("lua_need_request_body").with(parser(value)).skip(semi())
+            .map(LuaNeedRequestBody),
+        ident("ssl_certificate_by_lua_file").with(parser(value)).skip(semi())
+            .map(SslCertificateByLuaFile),
+        ident("ssl_session_fetch_by_lua_file").with(parser(value)).skip(semi())
+            .map(SslSessionFetchByLuaFile),
+        ident("ssl_session_store_by_lua_file").with(parser(value)).skip(semi())
+            .map(SslSessionStoreByLuaFile),
+    ))
+    .parse_stream(input)
+}
+
 pub fn directive<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Directive, TokenStream<'a>>
 {
@@ -265,6 +296,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
             .map(Item::ClientMaxBodySize),
         parser(proxy::directives),
         parser(gzip::directives),
+        parser(openresty),
     )))
     .map(|(pos, dir)| Directive {
         position: pos,

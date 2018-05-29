@@ -31,5 +31,6 @@ fn roundtrip(filename: &str) {
 #[test] fn root() { roundtrip("root"); }
 #[test] fn alias() { roundtrip("alias"); }
 #[test] fn client_max_body_size() { roundtrip("client_max_body_size"); }
+#[test] fn openresty() { roundtrip("openresty"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }
