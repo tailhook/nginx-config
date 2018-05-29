@@ -170,6 +170,7 @@ pub enum Item {
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
     ClientMaxBodySize(Value),
+    Include(Value),
     // openresty
     RewriteByLuaFile(Value),
     BalancerByLuaFile(Value),
@@ -207,6 +208,7 @@ impl Item {
             ServerName(..) => "server_name",
             Set { .. } => "set",
             ClientMaxBodySize(..) => "client_max_body_size",
+            Include(..) => "include",
             // openresty
             RewriteByLuaFile(..) => "rewrite_by_lua_file",
             BalancerByLuaFile(..) => "balancer_by_lua_file",
@@ -243,6 +245,7 @@ impl Item {
             ServerName(..) => None,
             Set { .. } => None,
             ClientMaxBodySize(..) => None,
+            Include(..) => None,
             // openresty
             RewriteByLuaFile(..) => None,
             BalancerByLuaFile(..) => None,
@@ -279,6 +282,7 @@ impl Item {
             ServerName(..) => None,
             Set { .. } => None,
             ClientMaxBodySize(..) => None,
+            Include(..) => None,
             // openresty
             RewriteByLuaFile(..) => None,
             BalancerByLuaFile(..) => None,
@@ -329,6 +333,7 @@ impl Item {
             }
             Root(ref mut v) => f(v),
             Alias(ref mut v) => f(v),
+            Include(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),
             ClientMaxBodySize(ref mut v) => f(v),

@@ -287,6 +287,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
             .map(Item::Server),
         ident("root").with(parser(value)).skip(semi()).map(Item::Root),
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
+        ident("include").with(parser(value)).skip(semi()).map(Item::Include),
         parser(location),
         parser(listen),
         parser(add_header),

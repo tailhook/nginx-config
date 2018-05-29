@@ -158,6 +158,7 @@ impl Displayable for ast::Item {
             | Root(ref val)
             | Alias(ref val)
             | ClientMaxBodySize(ref val)
+            | Include(ref val)
             | RewriteByLuaFile(ref val)
             | BalancerByLuaFile(ref val)
             | AccessByLuaFile(ref val)
