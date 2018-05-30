@@ -188,6 +188,13 @@ pub struct ErrorPage {
     pub uri: Value,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Return {
+    Redirect { code: Option<u32>, url: Value },
+    Text { code: u32, text: Value },
+}
+
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -207,6 +214,7 @@ pub enum Item {
     Root(Value),
     Alias(Value),
     ErrorPage(ErrorPage),
+    Return(Return),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
     Map(Map),
@@ -247,6 +255,7 @@ impl Item {
             Root(..) => "root",
             Alias(..) => "alias",
             ErrorPage(..) => "error_page",
+            Return(..) => "return",
             ServerName(..) => "server_name",
             Set { .. } => "set",
             Map(..) => "map",
@@ -286,6 +295,7 @@ impl Item {
             Root(..) => None,
             Alias(..) => None,
             ErrorPage(..) => None,
+            Return(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
             Map(..) => None,
@@ -325,6 +335,7 @@ impl Item {
             Root(..) => None,
             Alias(..) => None,
             ErrorPage(..) => None,
+            Return(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
             Map(..) => None,
@@ -381,6 +392,8 @@ impl Item {
             Root(ref mut v) => f(v),
             Alias(ref mut v) => f(v),
             ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
+            Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
+            Return(::ast::Return::Text { ref mut text, .. }) => f(text),
             Include(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),

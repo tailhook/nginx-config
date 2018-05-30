@@ -249,6 +249,25 @@ impl Displayable for ast::Item {
                 ep.uri.display(f);
                 f.end()
             }
+            Return(ref ret) => {
+                use ast::Return::*;
+                f.indent();
+                f.write("return ");
+                match ret {
+                    Redirect { code: None, url } => url.display(f),
+                    Redirect { code: Some(code), url } => {
+                        f.fmt(&code);
+                        f.write(" ");
+                        url.display(f);
+                    }
+                    Text { code, text } => {
+                        f.fmt(&code);
+                        f.write(" ");
+                        text.display(f);
+                    }
+                }
+                f.end()
+            }
         }
     }
 }

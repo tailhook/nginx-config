@@ -393,6 +393,51 @@ pub fn error_page<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn return_directive<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::Return::*;
+    use value::Item::*;
+
+    fn lit<'a, 'x>(val: &'a Value) -> Result<&'a str, Error<Token<'x>, Token<'x>>> {
+        if val.data.is_empty() {
+            return Err(Error::unexpected_message(
+                "empty return codes are not supported"));
+        }
+        if val.data.len() > 1 {
+            return Err(Error::unexpected_message(
+                "return code can't contain variables"));
+        }
+        match val.data[0] {
+            Literal(ref x) => return Ok(x),
+            _ => return Err(Error::unexpected_message(
+                "return code can't contain variables")),
+        }
+    }
+
+    ident("return")
+    .with(parser(value).and(optional(parser(value))))
+    .and_then(|(a, b)| -> Result<_, Error<_, _>> {
+        if let Some(target) = b {
+            let code = lit(&a)?.parse::<u32>()?;
+            match code {
+                301 | 302 | 303 | 307 | 308
+                    => Ok(Redirect { code: Some(code), url: target }),
+                200...599
+                    => Ok(Text { code: code, text: target }),
+                _ => return Err(Error::unexpected_message(
+                    format!("invalid response code {}", code))),
+            }
+        } else {
+            Ok(Redirect { code: None, url: a})
+        }
+    })
+    .map(Item::Return)
+    .skip(semi())
+    .parse_stream(input)
+}
+
+
 pub fn openresty<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
@@ -443,6 +488,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("root").with(parser(value)).skip(semi()).map(Item::Root),
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
         parser(error_page),
+        parser(return_directive),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
         parser(location),
         parser(listen),
