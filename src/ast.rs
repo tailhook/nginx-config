@@ -191,7 +191,7 @@ pub struct ErrorPage {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Return {
     Redirect { code: Option<u32>, url: Value },
-    Text { code: u32, text: Value },
+    Text { code: u32, text: Option<Value> },
 }
 
 
@@ -393,7 +393,8 @@ impl Item {
             Alias(ref mut v) => f(v),
             ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
             Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
-            Return(::ast::Return::Text { ref mut text, .. }) => f(text),
+            Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
+            Return(::ast::Return::Text { text: None, .. }) => {},
             Include(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),

@@ -424,12 +424,32 @@ pub fn return_directive<'a>(input: &mut TokenStream<'a>)
                 301 | 302 | 303 | 307 | 308
                     => Ok(Redirect { code: Some(code), url: target }),
                 200...599
-                    => Ok(Text { code: code, text: target }),
+                    => Ok(Text { code: code, text: Some(target) }),
                 _ => return Err(Error::unexpected_message(
                     format!("invalid response code {}", code))),
             }
         } else {
-            Ok(Redirect { code: None, url: a})
+            match a.data.get(0) {
+                Some(Literal(x))
+                if x.starts_with("https://") || x.starts_with("http://")
+                => Ok(Redirect { code: None, url: a.clone()}),
+                Some(Variable(v)) if v == "scheme"
+                => Ok(Redirect { code: None, url: a.clone()}),
+                _ => {
+                    let code = lit(&a)?.parse::<u32>()?;
+                    match code {
+                        301 | 302 | 303 | 307 | 308
+                        => return Err(Error::unexpected_message(
+                            "return with redirect code must have \
+                             destination URI")),
+                        200...599
+                        => Ok(Text { code: code, text: None }),
+                        _ => return Err(Error::unexpected_message(
+                            format!("invalid response code {}", code))),
+                    }
+
+                }
+            }
         }
     })
     .map(Item::Return)

@@ -262,8 +262,13 @@ impl Displayable for ast::Item {
                     }
                     Text { code, text } => {
                         f.fmt(&code);
-                        f.write(" ");
-                        text.display(f);
+                        match text {
+                            Some(v) => {
+                                f.write(" ");
+                                v.display(f);
+                            }
+                            None => {}
+                        }
                     }
                 }
                 f.end()
