@@ -393,6 +393,31 @@ pub fn error_page<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn rewrite<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::RewriteFlag::*;
+    use ast::Item::Rewrite;
+
+    ident("rewrite")
+    .with(string())
+    .and(parser(value))
+    .and(optional(choice((
+        ident("last").map(|_| Last),
+        ident("break").map(|_| Break),
+        ident("redirect").map(|_| Redirect),
+        ident("permanent").map(|_| Permanent),
+    ))))
+    .map(|((regex, replacement), flag)| {
+        Rewrite(ast::Rewrite {
+            regex: regex.value.to_string(), replacement, flag,
+        })
+    })
+    .skip(semi())
+    .parse_stream(input)
+}
+
+
 pub fn return_directive<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
@@ -509,6 +534,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
         parser(error_page),
         parser(return_directive),
+        parser(rewrite),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
         ident("ssl_certificate").with(parser(value)).skip(semi())
             .map(Item::SslCertificate),

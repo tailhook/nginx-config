@@ -213,6 +213,22 @@ impl Displayable for ast::Item {
                 }
                 f.end_block();
             }
+            Rewrite(ref rw) => {
+                use ast::RewriteFlag::*;
+                f.indent();
+                f.write("rewrite ");
+                f.write(escape(&rw.regex));
+                f.write(" ");
+                rw.replacement.display(f);
+                f.write(match rw.flag {
+                    Some(Last) => " last",
+                    Some(Break) => " break",
+                    Some(Redirect) => " redirect",
+                    Some(Permanent) => " permanent",
+                    None => "",
+                });
+                f.end();
+            }
             | Root(ref val)
             | Alias(ref val)
             | ClientMaxBodySize(ref val)

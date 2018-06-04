@@ -194,6 +194,21 @@ pub enum Return {
     Text { code: u32, text: Option<Value> },
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RewriteFlag {
+    Last,
+    Break,
+    Redirect,
+    Permanent,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Rewrite {
+    pub regex: String,
+    pub replacement: Value,
+    pub flag: Option<RewriteFlag>,
+}
+
 
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -214,6 +229,7 @@ pub enum Item {
     Root(Value),
     Alias(Value),
     ErrorPage(ErrorPage),
+    Rewrite(Rewrite),
     Return(Return),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
@@ -257,6 +273,7 @@ impl Item {
             Root(..) => "root",
             Alias(..) => "alias",
             ErrorPage(..) => "error_page",
+            Rewrite(..) => "rewrite",
             Return(..) => "return",
             ServerName(..) => "server_name",
             Set { .. } => "set",
@@ -299,6 +316,7 @@ impl Item {
             Root(..) => None,
             Alias(..) => None,
             ErrorPage(..) => None,
+            Rewrite(..) => None,
             Return(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
@@ -341,6 +359,7 @@ impl Item {
             Root(..) => None,
             Alias(..) => None,
             ErrorPage(..) => None,
+            Rewrite(..) => None,
             Return(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
@@ -400,6 +419,7 @@ impl Item {
             Root(ref mut v) => f(v),
             Alias(ref mut v) => f(v),
             ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
+            Rewrite(ref mut rw) => f(&mut rw.replacement),
             Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
             Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
             Return(::ast::Return::Text { text: None, .. }) => {},
