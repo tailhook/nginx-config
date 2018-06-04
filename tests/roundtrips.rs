@@ -36,5 +36,6 @@ fn roundtrip(filename: &str) {
 #[test] fn map() { roundtrip("map"); }
 #[test] fn error_pages() { roundtrip("error_pages"); }
 #[test] fn returns() { roundtrip("return"); }
+#[test] fn ssl() { roundtrip("ssl"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

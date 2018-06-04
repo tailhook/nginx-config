@@ -228,6 +228,8 @@ impl Displayable for ast::Item {
             | SslCertificateByLuaFile(ref val)
             | SslSessionFetchByLuaFile(ref val)
             | SslSessionStoreByLuaFile(ref val)
+            | SslCertificate(ref val)
+            | SslCertificateKey(ref val)
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }

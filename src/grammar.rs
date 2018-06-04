@@ -510,6 +510,10 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(error_page),
         parser(return_directive),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
+        ident("ssl_certificate").with(parser(value)).skip(semi())
+            .map(Item::SslCertificate),
+        ident("ssl_certificate_key").with(parser(value)).skip(semi())
+            .map(Item::SslCertificateKey),
         parser(location),
         parser(listen),
         parser(add_header),

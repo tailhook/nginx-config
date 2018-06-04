@@ -220,6 +220,8 @@ pub enum Item {
     Map(Map),
     ClientMaxBodySize(Value),
     Include(Value),
+    SslCertificate(Value),
+    SslCertificateKey(Value),
     // openresty
     RewriteByLuaFile(Value),
     BalancerByLuaFile(Value),
@@ -261,6 +263,8 @@ impl Item {
             Map(..) => "map",
             ClientMaxBodySize(..) => "client_max_body_size",
             Include(..) => "include",
+            SslCertificate(..) => "ssl_certificate",
+            SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
             RewriteByLuaFile(..) => "rewrite_by_lua_file",
             BalancerByLuaFile(..) => "balancer_by_lua_file",
@@ -301,6 +305,8 @@ impl Item {
             Map(..) => None,
             ClientMaxBodySize(..) => None,
             Include(..) => None,
+            SslCertificate(..) => None,
+            SslCertificateKey(..) => None,
             // openresty
             RewriteByLuaFile(..) => None,
             BalancerByLuaFile(..) => None,
@@ -341,6 +347,8 @@ impl Item {
             Map(..) => None,
             ClientMaxBodySize(..) => None,
             Include(..) => None,
+            SslCertificate(..) => None,
+            SslCertificateKey(..) => None,
             // openresty
             RewriteByLuaFile(..) => None,
             BalancerByLuaFile(..) => None,
@@ -396,6 +404,8 @@ impl Item {
             Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
             Return(::ast::Return::Text { text: None, .. }) => {},
             Include(ref mut v) => f(v),
+            SslCertificate(ref mut v) => f(v),
+            SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),
             Map(::ast::Map {
