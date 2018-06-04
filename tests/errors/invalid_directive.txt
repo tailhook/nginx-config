@@ -1,5 +1,5 @@
-bad_directive;
+proxy_get_header;
 ---
 parse error: Parse error at 1:1
-Unexpected `bad_directive`
-Expected `worker_processes`, `error_page`, `return`, `location`, `listen`, `add_header`, `server_name`, `set`, `map`, `proxy_pass`, `proxy_set_header`, `gzip_static`, `gzip_proxied`, `gzip`, `rewrite_by_lua_file`, `balancer_by_lua_file`, `access_by_lua_file`, `header_filter_by_lua_file`, `content_by_lua_file`, `body_filter_by_lua_file`, `log_by_lua_file`, `lua_need_request_body`, `ssl_certificate_by_lua_file`, `ssl_session_fetch_by_lua_file`, `ssl_session_store_by_lua_file`, `daemon`, `master_process`, `http`, `server`, `root`, `alias`, `include` or `client_max_body_size`
+Unexpected `proxy_get_header`
+Expected `proxy_set_header`, `proxy_pass` or `one of <N> options`

@@ -12,6 +12,7 @@
 #![warn(missing_docs)]
 
 extern crate combine;
+#[cfg(feature="fuzzy_errors")] extern crate strsim;
 #[macro_use] extern crate failure;
 #[macro_use] extern crate matches;
 #[cfg(test)] #[macro_use] extern crate pretty_assertions;
