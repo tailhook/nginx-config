@@ -152,7 +152,7 @@ impl<'a> TokenStream<'a> {
                     match cur_char {
                         '\r' | '\t' | '\n' => {
                             self.position.column += nchars;
-                            self.off += idx+1;
+                            self.off += idx;
                             return Ok((String, nchars));
                         }
                         '{' if prev_char == '$' => {
