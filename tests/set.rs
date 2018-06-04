@@ -10,3 +10,4 @@ fn roundtrip(value: &str) {
 
 #[test] fn simple() { roundtrip("set $xy something;\n"); }
 #[test] fn from_vars() { roundtrip("set $real_id id-$request_id;\n"); }
+#[test] fn from_regex() { roundtrip("set $real_id $1;\n"); }

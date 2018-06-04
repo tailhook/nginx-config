@@ -67,7 +67,7 @@ impl Value {
                         '{' => {
                             unimplemented!();
                         }
-                        'a'...'z' | 'A'...'Z' | '_' => {
+                        'a'...'z' | 'A'...'Z' | '_' | '0'...'9' => {
                             while let Some(&(_, c)) = chiter.peek() {
                                 match c {
                                     'a'...'z' | 'A'...'Z' | '_' | '0'...'9'
@@ -139,7 +139,7 @@ impl Value {
                         '{' => {
                             unimplemented!();
                         }
-                        'a'...'z' | 'A'...'Z' | '_' => {
+                        'a'...'z' | 'A'...'Z' | '_' | '0'...'9' => {
                             while let Some(&(_, c)) = chiter.peek() {
                                 match c {
                                     'a'...'z' | 'A'...'Z' | '_' | '0'...'9'
