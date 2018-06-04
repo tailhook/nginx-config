@@ -65,7 +65,21 @@ impl Value {
                             "bare $ in expression"))?;
                     match fchar {
                         '{' => {
-                            unimplemented!();
+                            while let Some(&(_, c)) = chiter.peek() {
+                                match c {
+                                    'a'...'z' | 'A'...'Z' | '_' | '0'...'9'
+                                    => chiter.next(),
+                                    '}' => break,
+                                    _ => {
+                                        return Err(Error::expected("}".into()));
+                                    }
+                                };
+                            }
+                            let now = chiter.peek().map(|&(idx, _)| idx)
+                                .unwrap();
+                            buf.push(Variable(
+                                value[vstart+1..now].to_string()));
+                            cur_slice = now+1;
                         }
                         'a'...'z' | 'A'...'Z' | '_' | '0'...'9' => {
                             while let Some(&(_, c)) = chiter.peek() {
@@ -210,24 +224,52 @@ impl Value {
     }
 }
 
+fn next_alphanum(data: &Vec<Item>, index: usize) -> bool {
+    use self::Item::*;
+    data.get(index+1).and_then(|item| {
+        match item {
+            Literal(s) => Some(s),
+            Variable(_) => None,
+        }
+    }).and_then(|s| {
+        s.chars().next().map(|c| c.is_alphanumeric())
+    }).unwrap_or(false)
+}
+
 impl Displayable for Value {
     fn display(&self, f: &mut Formatter) {
         use self::Item::*;
         if self.data.is_empty() || self.has_specials() {
             f.write("\"");
-            for item in &self.data {
+            for (index, item) in self.data.iter().enumerate() {
                 match *item {
                     // TODO(tailhook) escape special chars
                     Literal(ref v) => f.write(v),
-                    Variable(ref v) => { f.write("$"); f.write(v); }
+                    Variable(ref v) if next_alphanum(&self.data, index) => {
+                        f.write("${");
+                        f.write(v);
+                        f.write("}");
+                    }
+                    Variable(ref v) => {
+                        f.write("$");
+                        f.write(v);
+                    }
                 }
             }
             f.write("\"");
         } else {
-            for item in &self.data {
+            for (index, item) in self.data.iter().enumerate() {
                 match *item {
                     Literal(ref v) => f.write(v),
-                    Variable(ref v) => { f.write("$"); f.write(v); }
+                    Variable(ref v) if next_alphanum(&self.data, index) => {
+                        f.write("${");
+                        f.write(v);
+                        f.write("}");
+                    }
+                    Variable(ref v) => {
+                        f.write("$");
+                        f.write(v);
+                    }
                 }
             }
         }
