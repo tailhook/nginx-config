@@ -209,6 +209,19 @@ pub struct Rewrite {
     pub flag: Option<RewriteFlag>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TryFilesLastOption {
+    Uri(Value),
+    NamedLocation(String),
+    Code(u32),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TryFiles {
+    pub options: Vec<Value>,
+    pub last_option: TryFilesLastOption,
+}
+
 
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -231,6 +244,7 @@ pub enum Item {
     ErrorPage(ErrorPage),
     Rewrite(Rewrite),
     Return(Return),
+    TryFiles(TryFiles),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
     Map(Map),
@@ -275,6 +289,7 @@ impl Item {
             ErrorPage(..) => "error_page",
             Rewrite(..) => "rewrite",
             Return(..) => "return",
+            TryFiles(..) => "try_files",
             ServerName(..) => "server_name",
             Set { .. } => "set",
             Map(..) => "map",
@@ -318,6 +333,7 @@ impl Item {
             ErrorPage(..) => None,
             Rewrite(..) => None,
             Return(..) => None,
+            TryFiles(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
             Map(..) => None,
@@ -361,6 +377,7 @@ impl Item {
             ErrorPage(..) => None,
             Rewrite(..) => None,
             Return(..) => None,
+            TryFiles(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
             Map(..) => None,
@@ -423,6 +440,16 @@ impl Item {
             Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
             Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
             Return(::ast::Return::Text { text: None, .. }) => {},
+            TryFiles(ref mut tf) => {
+                for opt in &mut tf.options {
+                    f(opt);
+                }
+                match tf.last_option {
+                    TryFilesLastOption::Uri(ref mut v) => f(v),
+                    TryFilesLastOption::NamedLocation(..) => {},
+                    TryFilesLastOption::Code(..) => {},
+                }
+            },
             Include(ref mut v) => f(v),
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),

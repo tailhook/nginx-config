@@ -38,5 +38,6 @@ fn roundtrip(filename: &str) {
 #[test] fn returns() { roundtrip("return"); }
 #[test] fn ssl() { roundtrip("ssl"); }
 #[test] fn rewrite() { roundtrip("rewrite"); }
+#[test] fn try_files() { roundtrip("try_files"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

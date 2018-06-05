@@ -14,6 +14,10 @@ use proxy;
 use tokenizer::{TokenStream, Token};
 use value::Value;
 
+enum Code {
+    Redirect(u32),
+    Normal(u32),
+}
 
 pub fn bool<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<bool, TokenStream<'a>>
@@ -319,6 +323,26 @@ pub fn location<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+impl Code {
+    pub fn parse<'x, 'y>(code_str: &'x str)
+        -> Result<Code, Error<Token<'y>, Token<'y>>>
+    {
+        let code = code_str.parse::<u32>()?;
+        match code {
+            301 | 302 | 303 | 307 | 308 => Ok(Code::Redirect(code)),
+            200...599 => Ok(Code::Normal(code)),
+            _ => return Err(Error::unexpected_message(
+                format!("invalid response code {}", code))),
+        }
+    }
+    pub fn as_code(&self) -> u32 {
+        match *self {
+            Code::Redirect(code) => code,
+            Code::Normal(code) => code,
+        }
+    }
+}
+
 pub fn error_page<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
@@ -362,13 +386,9 @@ pub fn error_page<'a>(input: &mut TokenStream<'a>)
             if dest == "=" {
                 ErrorPageResponse::Keep
             } else {
-                let code = dest[1..].parse::<u32>()?;
-                match code {
-                    301 | 302 | 303 | 307 | 308
-                    => ErrorPageResponse::Redirect(code),
-                    200...599 => ErrorPageResponse::Replace(code),
-                    _ => return Err(Error::unexpected_message(
-                        format!("invalid response code {}", code))),
+                match Code::parse(&dest[1..])? {
+                    Code::Redirect(code) => ErrorPageResponse::Redirect(code),
+                    Code::Normal(code) => ErrorPageResponse::Replace(code),
                 }
             }
         } else {
@@ -376,11 +396,7 @@ pub fn error_page<'a>(input: &mut TokenStream<'a>)
         };
         let mut codes = Vec::new();
         for code in v {
-            match lit(&code)?.parse::<u32>()? {
-                val@200...599 => codes.push(val),
-                _ => return Err(Error::unexpected_message(
-                    format!("invalid response code {}", code))),
-            }
+            codes.push(Code::parse(lit(&code)?)?.as_code());
         }
 
         Ok(Item::ErrorPage(::ast::ErrorPage {
@@ -417,6 +433,35 @@ pub fn rewrite<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
+pub fn try_files<'a>(input: &mut TokenStream<'a>)
+    -> ParseResult<Item, TokenStream<'a>>
+{
+    use ast::TryFilesLastOption::*;
+    use ast::Item::TryFiles;
+    use value::Item::*;
+
+    ident("try_files")
+    .with(many1(parser(value)))
+    .skip(semi())
+    .and_then(|mut v: Vec<_>| -> Result<_, Error<_, _>> {
+        let last = v.pop().unwrap();
+        let last = match &last.data[..] {
+            [Literal(x)] if x.starts_with("=") => {
+                Code(self::Code::parse(&x[1..])?.as_code())
+            }
+            [Literal(x)] if x.starts_with("@") => {
+                NamedLocation(x[1..].to_string())
+            }
+            _ => Uri(last.clone()),
+        };
+        Ok(TryFiles(::ast::TryFiles {
+            options: v,
+            last_option: last,
+        }))
+    })
+    .parse_stream(input)
+}
+
 
 pub fn return_directive<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
@@ -444,14 +489,11 @@ pub fn return_directive<'a>(input: &mut TokenStream<'a>)
     .with(parser(value).and(optional(parser(value))))
     .and_then(|(a, b)| -> Result<_, Error<_, _>> {
         if let Some(target) = b {
-            let code = lit(&a)?.parse::<u32>()?;
-            match code {
-                301 | 302 | 303 | 307 | 308
-                    => Ok(Redirect { code: Some(code), url: target }),
-                200...599
-                    => Ok(Text { code: code, text: Some(target) }),
-                _ => return Err(Error::unexpected_message(
-                    format!("invalid response code {}", code))),
+            match Code::parse(lit(&a)?)? {
+                Code::Redirect(code)
+                => Ok(Redirect { code: Some(code), url: target }),
+                Code::Normal(code)
+                => Ok(Text { code: code, text: Some(target) }),
             }
         } else {
             match a.data.get(0) {
@@ -461,16 +503,13 @@ pub fn return_directive<'a>(input: &mut TokenStream<'a>)
                 Some(Variable(v)) if v == "scheme"
                 => Ok(Redirect { code: None, url: a.clone()}),
                 _ => {
-                    let code = lit(&a)?.parse::<u32>()?;
-                    match code {
-                        301 | 302 | 303 | 307 | 308
+                    match Code::parse(lit(&a)?)? {
+                        Code::Redirect(_)
                         => return Err(Error::unexpected_message(
                             "return with redirect code must have \
                              destination URI")),
-                        200...599
+                        Code::Normal(code)
                         => Ok(Text { code: code, text: None }),
-                        _ => return Err(Error::unexpected_message(
-                            format!("invalid response code {}", code))),
                     }
 
                 }
@@ -535,6 +574,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(error_page),
         parser(return_directive),
         parser(rewrite),
+        parser(try_files),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
         ident("ssl_certificate").with(parser(value)).skip(semi())
             .map(Item::SslCertificate),

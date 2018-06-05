@@ -291,6 +291,26 @@ impl Displayable for ast::Item {
                 }
                 f.end()
             }
+            TryFiles(ref tf) => {
+                use ast::TryFilesLastOption::*;
+                f.write("try_files ");
+                for item in &tf.options {
+                    item.display(f);
+                    f.write(" ");
+                }
+                match tf.last_option {
+                    Uri(ref v) => v.display(f),
+                    NamedLocation(ref loc) => {
+                        f.write("@");
+                        f.write(&loc);
+                    }
+                    Code(code) => {
+                        f.write("=");
+                        f.fmt(&code);
+                    }
+                }
+                f.end();
+            }
         }
     }
 }
