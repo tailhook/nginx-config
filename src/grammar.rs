@@ -1,5 +1,5 @@
 use combine::{eof, many, many1, ParseResult, parser, Parser};
-use combine::{choice, position, optional};
+use combine::{choice, position};
 use combine::error::StreamError;
 use combine::easy::Error;
 
@@ -79,27 +79,6 @@ pub fn server_name<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
-pub fn set<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
-    ident("set")
-    .with(string().and_then(|t| {
-        let ch1 = t.value.chars().nth(0).unwrap_or(' ');
-        let ch2 = t.value.chars().nth(1).unwrap_or(' ');
-        if ch1 == '$' && matches!(ch2, 'a'...'z' | 'A'...'Z' | '_') &&
-            t.value[2..].chars()
-            .all(|x| matches!(x, 'a'...'z' | 'A'...'Z' | '0'...'9' | '_'))
-        {
-            Ok(t.value[1..].to_string())
-        } else {
-            Err(Error::unexpected_message("invalid variable"))
-        }
-    }))
-    .and(parser(value))
-    .skip(semi())
-    .map(|(variable, value)| Item::Set { variable, value })
-    .parse_stream(input)
-}
 
 pub fn map<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
@@ -281,65 +260,6 @@ pub fn try_files<'a>(input: &mut TokenStream<'a>)
 }
 
 
-pub fn return_directive<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
-    use ast::Return::*;
-    use value::Item::*;
-
-    fn lit<'a, 'x>(val: &'a Value) -> Result<&'a str, Error<Token<'x>, Token<'x>>> {
-        if val.data.is_empty() {
-            return Err(Error::unexpected_message(
-                "empty return codes are not supported"));
-        }
-        if val.data.len() > 1 {
-            return Err(Error::unexpected_message(
-                "return code can't contain variables"));
-        }
-        match val.data[0] {
-            Literal(ref x) => return Ok(x),
-            _ => return Err(Error::unexpected_message(
-                "return code can't contain variables")),
-        }
-    }
-
-    ident("return")
-    .with(parser(value).and(optional(parser(value))))
-    .and_then(|(a, b)| -> Result<_, Error<_, _>> {
-        if let Some(target) = b {
-            match Code::parse(lit(&a)?)? {
-                Code::Redirect(code)
-                => Ok(Redirect { code: Some(code), url: target }),
-                Code::Normal(code)
-                => Ok(Text { code: code, text: Some(target) }),
-            }
-        } else {
-            match a.data.get(0) {
-                Some(Literal(x))
-                if x.starts_with("https://") || x.starts_with("http://")
-                => Ok(Redirect { code: None, url: a.clone()}),
-                Some(Variable(v)) if v == "scheme"
-                => Ok(Redirect { code: None, url: a.clone()}),
-                _ => {
-                    match Code::parse(lit(&a)?)? {
-                        Code::Redirect(_)
-                        => return Err(Error::unexpected_message(
-                            "return with redirect code must have \
-                             destination URI")),
-                        Code::Normal(code)
-                        => Ok(Text { code: code, text: None }),
-                    }
-
-                }
-            }
-        }
-    })
-    .map(Item::Return)
-    .skip(semi())
-    .parse_stream(input)
-}
-
-
 pub fn openresty<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
 {
@@ -387,7 +307,6 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("server").with(parser(block))
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
-        parser(return_directive),
         rewrite::directives(),
         parser(try_files),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
@@ -398,7 +317,6 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(location),
         headers::directives(),
         parser(server_name),
-        parser(set),
         parser(map),
         ident("client_max_body_size").with(parser(value)).skip(semi())
             .map(Item::ClientMaxBodySize),
