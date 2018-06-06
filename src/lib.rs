@@ -18,18 +18,20 @@ extern crate combine;
 #[cfg(test)] #[macro_use] extern crate pretty_assertions;
 
 pub mod ast;
-mod core;
 mod display;
 mod error;
 mod format;
 mod grammar;
-mod gzip;
 mod helpers;
 mod position;
-mod proxy;
 mod tokenizer;
 mod value;
 pub mod visitors;
+
+mod core;
+mod gzip;
+mod headers;
+mod proxy;
 
 pub use grammar::{parse_main, parse_directives};
 pub use format::Style;

@@ -10,6 +10,7 @@ use gzip;
 use helpers::{semi, ident, text, string};
 use position::Pos;
 use proxy;
+use headers;
 use tokenizer::{TokenStream, Token};
 use value::Value;
 
@@ -47,22 +48,6 @@ pub fn worker_processes<'a>(input: &mut TokenStream<'a>)
     )))
     .skip(semi())
     .map(Item::WorkerProcesses)
-    .parse_stream(input)
-}
-
-pub fn add_header<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
-    ident("add_header")
-    .with((
-        parser(value),
-        parser(value),
-        optional(ident("always").map(|_| ())),
-    )).map(|(field, value, always)| {
-        ast::AddHeader { field, value, always: always.is_some() }
-    })
-    .skip(semi())
-    .map(Item::AddHeader)
     .parse_stream(input)
 }
 
@@ -431,7 +416,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         ident("ssl_certificate_key").with(parser(value)).skip(semi())
             .map(Item::SslCertificateKey),
         parser(location),
-        parser(add_header),
+        headers::directives(),
         parser(server_name),
         parser(set),
         parser(map),
