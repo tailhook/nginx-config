@@ -18,6 +18,7 @@ extern crate combine;
 #[cfg(test)] #[macro_use] extern crate pretty_assertions;
 
 pub mod ast;
+mod core;
 mod display;
 mod error;
 mod format;
