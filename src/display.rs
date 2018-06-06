@@ -300,6 +300,7 @@ impl Displayable for ast::Item {
             }
             TryFiles(ref tf) => {
                 use ast::TryFilesLastOption::*;
+                f.indent();
                 f.write("try_files ");
                 for item in &tf.options {
                     item.display(f);
@@ -316,6 +317,15 @@ impl Displayable for ast::Item {
                         f.fmt(&code);
                     }
                 }
+                f.end();
+            }
+            Expires(::ast::Expires { modified, ref value }) => {
+                f.indent();
+                f.write("expires ");
+                if modified {
+                    f.write("modified ");
+                }
+                value.display(f);
                 f.end();
             }
         }

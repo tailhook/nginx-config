@@ -222,6 +222,11 @@ pub struct TryFiles {
     pub last_option: TryFilesLastOption,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Expires {
+    pub modified: bool,
+    pub value: Value,
+}
 
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -239,6 +244,7 @@ pub enum Item {
     GzipStatic(GzipStatic),
     GzipProxied(Vec<GzipProxied>),
     AddHeader(AddHeader),
+    Expires(Expires),
     Root(Value),
     Alias(Value),
     ErrorPage(ErrorPage),
@@ -286,6 +292,7 @@ impl Item {
             GzipStatic(..) => "gzip_static",
             GzipProxied(..) => "gzip_proxied",
             AddHeader(..) => "add_header",
+            Expires(..) => "expires",
             Root(..) => "root",
             Alias(..) => "alias",
             ErrorPage(..) => "error_page",
@@ -332,6 +339,7 @@ impl Item {
             GzipStatic(..) => None,
             GzipProxied(..) => None,
             AddHeader(..) => None,
+            Expires(..) => None,
             Root(..) => None,
             Alias(..) => None,
             ErrorPage(..) => None,
@@ -378,6 +386,7 @@ impl Item {
             GzipStatic(..) => None,
             GzipProxied(..) => None,
             AddHeader(..) => None,
+            Expires(..) => None,
             Root(..) => None,
             Alias(..) => None,
             ErrorPage(..) => None,
@@ -441,6 +450,7 @@ impl Item {
                 f(field);
                 f(value);
             }
+            Expires(self::Expires { ref mut value, .. }) => f(value),
             Root(ref mut v) => f(v),
             Alias(ref mut v) => f(v),
             ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),

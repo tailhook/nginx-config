@@ -41,5 +41,6 @@ fn roundtrip(filename: &str) {
 #[test] fn try_files() { roundtrip("try_files"); }
 #[test] fn empty_gif() { roundtrip("empty_gif"); }
 #[test] fn internal() { roundtrip("internal"); }
+#[test] fn expires() { roundtrip("expires"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }
