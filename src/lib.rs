@@ -32,6 +32,7 @@ mod core;
 mod gzip;
 mod headers;
 mod proxy;
+mod rewrite;
 
 pub use grammar::{parse_main, parse_directives};
 pub use format::Style;

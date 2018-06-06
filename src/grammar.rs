@@ -4,15 +4,18 @@ use combine::error::StreamError;
 use combine::easy::Error;
 
 use ast::{self, Main, Directive, Item};
-use core;
 use error::ParseError;
-use gzip;
 use helpers::{semi, ident, text, string};
 use position::Pos;
-use proxy;
-use headers;
 use tokenizer::{TokenStream, Token};
 use value::Value;
+
+use core;
+use gzip;
+use headers;
+use proxy;
+use rewrite;
+
 
 pub enum Code {
     Redirect(u32),
@@ -247,29 +250,6 @@ impl Code {
     }
 }
 
-pub fn rewrite<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
-    use ast::RewriteFlag::*;
-    use ast::Item::Rewrite;
-
-    ident("rewrite")
-    .with(string())
-    .and(parser(value))
-    .and(optional(choice((
-        ident("last").map(|_| Last),
-        ident("break").map(|_| Break),
-        ident("redirect").map(|_| Redirect),
-        ident("permanent").map(|_| Permanent),
-    ))))
-    .map(|((regex, replacement), flag)| {
-        Rewrite(ast::Rewrite {
-            regex: regex.value.to_string(), replacement, flag,
-        })
-    })
-    .skip(semi())
-    .parse_stream(input)
-}
 
 pub fn try_files<'a>(input: &mut TokenStream<'a>)
     -> ParseResult<Item, TokenStream<'a>>
@@ -408,7 +388,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
         parser(return_directive),
-        parser(rewrite),
+        rewrite::directives(),
         parser(try_files),
         ident("include").with(parser(value)).skip(semi()).map(Item::Include),
         ident("ssl_certificate").with(parser(value)).skip(semi())
