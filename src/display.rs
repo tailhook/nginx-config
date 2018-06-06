@@ -249,6 +249,13 @@ impl Displayable for ast::Item {
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }
+            | EmptyGif
+            | Internal
+            => {
+                f.indent();
+                f.write(self.directive_name());
+                f.end();
+            }
             ErrorPage(ref ep) => {
                 use ast::ErrorPageResponse::*;
                 f.indent();

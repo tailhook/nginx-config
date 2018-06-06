@@ -250,6 +250,8 @@ pub enum Item {
     Map(Map),
     ClientMaxBodySize(Value),
     Include(Value),
+    EmptyGif,
+    Internal,
     SslCertificate(Value),
     SslCertificateKey(Value),
     // openresty
@@ -295,6 +297,8 @@ impl Item {
             Map(..) => "map",
             ClientMaxBodySize(..) => "client_max_body_size",
             Include(..) => "include",
+            EmptyGif => "empty_gif",
+            Internal => "internal",
             SslCertificate(..) => "ssl_certificate",
             SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
@@ -339,6 +343,8 @@ impl Item {
             Map(..) => None,
             ClientMaxBodySize(..) => None,
             Include(..) => None,
+            EmptyGif => None,
+            Internal => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -383,6 +389,8 @@ impl Item {
             Map(..) => None,
             ClientMaxBodySize(..) => None,
             Include(..) => None,
+            EmptyGif => None,
+            Internal => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -451,6 +459,8 @@ impl Item {
                 }
             },
             Include(ref mut v) => f(v),
+            EmptyGif => {}
+            Internal => {}
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},
