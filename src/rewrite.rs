@@ -1,13 +1,14 @@
 use combine::{parser, Parser};
-use combine::{choice, optional};
+use combine::{choice, optional, many1};
 use combine::error::StreamError;
 use combine::easy::Error;
 
 use ast::{self, Item};
-use grammar::{value, Code};
+use grammar::{value, block, Code};
 use helpers::{semi, ident, string};
+use position::Pos;
 use tokenizer::{TokenStream, Token};
-use value::Value;
+use value::{self, Value};
 
 
 fn rewrite<'a>()
@@ -111,6 +112,125 @@ fn return_directive<'a>()
     .skip(semi())
 }
 
+fn strip_open_paren<'a>(v: &'_ mut Vec<value::Item>)
+    -> Result<(), Error<Token<'a>, Token<'a>>>
+{
+    use value::Item::*;
+    match v.get_mut(0) {
+        Some(Literal(s)) if s.starts_with('(') => {
+            if s != "(" {
+                *s = s[1..].to_string();
+                return Ok(())
+            }
+        }
+        _ => return Err(Error::unexpected_message("missing parenthesis")),
+    }
+    v.remove(0);
+    Ok(())
+}
+
+fn strip_close_paren<'a>(v: &'_ mut Vec<value::Item>)
+    -> Result<(), Error<Token<'a>, Token<'a>>>
+{
+    use value::Item::*;
+    match v.last_mut() {
+        Some(Literal(s)) if s.ends_with(')') => {
+            if s != ")" {
+                let new_len = s.len()-1;
+                s.truncate(new_len);
+                return Ok(())
+            }
+        }
+        _ => return Err(Error::unexpected_message("missing parenthesis")),
+    }
+    v.pop();
+    Ok(())
+}
+
+fn parse_unary<'a>(mut v: Vec<value::Item>, position: Pos)
+    -> Result<ast::IfCondition, Error<Token<'a>, Token<'a>>>
+{
+    use ast::IfCondition::*;
+    use value::Item::*;
+
+    let oper = v.remove(0);
+    let oper = match &oper {
+        Literal(x) => &x[..],
+        _ => unreachable!(),
+    };
+    let right = Value { position, data: v };
+    match oper {
+        "-d" => return Ok(DirExists(right)),
+        "!-d" => return Ok(DirNotExists(right)),
+        "-f" => return Ok(FileExists(right)),
+        "!-f" => return Ok(FileNotExists(right)),
+        "-x" => return Ok(Executable(right)),
+        "!-x" => return Ok(NotExecutable(right)),
+        "-e" => return Ok(Exists(right)),
+        "!-e" => return Ok(NotExists(right)),
+        _ => return Err(Error::unexpected_message("missing parenthesis")),
+    }
+}
+
+fn parse_binary<'a>(mut v: Vec<value::Item>, position: Pos)
+    -> Result<ast::IfCondition, Error<Token<'a>, Token<'a>>>
+{
+    use ast::IfCondition::*;
+    use value::Item::*;
+
+    let left = Value { position, data: vec![v.remove(0)] };
+    if v.len() == 0 {
+        return Ok(NonEmpty(left));
+    }
+    let oper = v.remove(0);
+    let oper = match &oper {
+        Literal(x) => &x[..],
+        Variable(..) => {
+            return Err(Error::unexpected_message(
+                "operator expected, variable vound"));
+        }
+    };
+    let right = match &v[..] {
+        [Literal(x)] => x.to_string(),
+        _ => return Err(Error::unexpected_message(
+                "you can only compare against a single literal")),
+    };
+    match oper {
+        "=" => return Ok(Eq(left, right)),
+        "!=" => return Ok(Neq(left, right)),
+        "~" => return Ok(RegEq(left, right, true)),
+        "!~" => return Ok(RegNeq(left, right, true)),
+        "~*" => return Ok(RegEq(left, right, false)),
+        "!~*" => return Ok(RegNeq(left, right, false)),
+        _ => return Err(Error::unexpected_message("missing parenthesis")),
+    }
+}
+
+fn if_directive<'a>()
+    -> impl Parser<Output=Item, Input=TokenStream<'a>>
+{
+    use value::Item::*;
+    ident("if")
+    .with(many1(parser(value)))
+    .and_then(|v: Vec<_>| -> Result<_, Error<_, _>> {
+        let pos = v[0].position;
+        let mut v = v.into_iter().flat_map(|x| x.data.into_iter()).collect();
+        strip_open_paren(&mut v)?;
+        strip_close_paren(&mut v)?;
+        match v.get(0) {
+            Some(Variable(..)) => parse_binary(v, pos),
+            Some(Literal(..)) => parse_unary(v, pos),
+            None => return Err(Error::unexpected_message(
+                "missing parenthesis")),
+        }
+    })
+    .and(parser(block))
+    .map(|(condition, (position, directives))| {
+        ast::If { position, condition, directives }
+    })
+    .map(Item::If)
+}
+
 pub fn directives<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
@@ -118,5 +238,6 @@ pub fn directives<'a>()
         rewrite(),
         set(),
         return_directive(),
+        if_directive(),
     ))
 }

@@ -39,6 +39,30 @@ pub struct Server {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IfCondition {
+    NonEmpty(Value),
+    Eq(Value, String),
+    Neq(Value, String),
+    RegEq(Value, String, bool),
+    RegNeq(Value, String, bool),
+    Exists(Value),
+    NotExists(Value),
+    FileExists(Value),
+    FileNotExists(Value),
+    DirExists(Value),
+    DirNotExists(Value),
+    Executable(Value),
+    NotExecutable(Value),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct If {
+    pub position: (Pos, Pos),
+    pub condition: IfCondition,
+    pub directives: Vec<Directive>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Address {
     Ip(SocketAddr),
     StarPort(u16),
@@ -250,6 +274,7 @@ pub enum Item {
     ErrorPage(ErrorPage),
     Rewrite(Rewrite),
     Return(Return),
+    If(If),
     TryFiles(TryFiles),
     ServerName(Vec<ServerName>),
     Set { variable: String, value: Value },
@@ -298,6 +323,7 @@ impl Item {
             ErrorPage(..) => "error_page",
             Rewrite(..) => "rewrite",
             Return(..) => "return",
+            If(..) => "if",
             TryFiles(..) => "try_files",
             ServerName(..) => "server_name",
             Set { .. } => "set",
@@ -345,6 +371,7 @@ impl Item {
             ErrorPage(..) => None,
             Rewrite(..) => None,
             Return(..) => None,
+            If(ref val) => Some(&val.directives),
             TryFiles(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
@@ -392,6 +419,7 @@ impl Item {
             ErrorPage(..) => None,
             Rewrite(..) => None,
             Return(..) => None,
+            If(ref mut val) => Some(&mut val.directives),
             TryFiles(..) => None,
             ServerName(..) => None,
             Set { .. } => None,
@@ -458,6 +486,24 @@ impl Item {
             Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
             Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
             Return(::ast::Return::Text { text: None, .. }) => {},
+            If(self::If { ref mut condition, .. }) => {
+                use self::IfCondition::*;
+                match condition {
+                    NonEmpty(ref mut v) => f(v),
+                    Eq(ref mut v, _) => f(v),
+                    Neq(ref mut v, _) => f(v),
+                    RegEq(ref mut v, _, _) => f(v),
+                    RegNeq(ref mut v, _, _) => f(v),
+                    Exists(ref mut v) => f(v),
+                    NotExists(ref mut v) => f(v),
+                    FileExists(ref mut v) => f(v),
+                    FileNotExists(ref mut v) => f(v),
+                    DirExists(ref mut v) => f(v),
+                    DirNotExists(ref mut v) => f(v),
+                    Executable(ref mut v) => f(v),
+                    NotExecutable(ref mut v) => f(v),
+                }
+            },
             TryFiles(ref mut tf) => {
                 for opt in &mut tf.options {
                     f(opt);

@@ -328,6 +328,80 @@ impl Displayable for ast::Item {
                 value.display(f);
                 f.end();
             }
+            If(ast::If { ref condition, ref directives, position: _ }) => {
+                use ast::IfCondition::*;
+                f.indent();
+                f.write("if (");
+                match condition {
+                    NonEmpty(ref v) => v.display(f),
+                    Eq(ref v, ref s) => {
+                        v.display(f);
+                        f.write(" = ");
+                        f.write(&escape(s));
+                    }
+                    Neq(ref v, ref s) => {
+                        v.display(f);
+                        f.write(" != ");
+                        f.write(&escape(s));
+                    }
+                    RegEq(ref v, ref r, case) => {
+                        v.display(f);
+                        if *case {
+                            f.write(" ~ ");
+                        } else {
+                            f.write(" ~* ");
+                        }
+                        f.write(&escape(r));
+                    }
+                    RegNeq(ref v, ref r, case) => {
+                        v.display(f);
+                        if *case {
+                            f.write(" !~ ");
+                        } else {
+                            f.write(" !~* ");
+                        }
+                        f.write(&escape(r));
+                    }
+                    Exists(ref v) => {
+                        f.write("-e ");
+                        v.display(f);
+                    }
+                    NotExists(ref v) => {
+                        f.write("!-e ");
+                        v.display(f);
+                    },
+                    FileExists(ref v) => {
+                        f.write("-f ");
+                        v.display(f);
+                    },
+                    FileNotExists(ref v) => {
+                        f.write("!-f ");
+                        v.display(f);
+                    },
+                    DirExists(ref v) => {
+                        f.write("-d ");
+                        v.display(f);
+                    },
+                    DirNotExists(ref v) => {
+                        f.write("!-d ");
+                        v.display(f);
+                    },
+                    Executable(ref v) => {
+                        f.write("-x ");
+                        v.display(f);
+                    },
+                    NotExecutable(ref v) => {
+                        f.write("!-x ");
+                        v.display(f);
+                    },
+                }
+                f.write(") ");
+                f.start_block();
+                for dir in directives {
+                    dir.display(f);
+                }
+                f.end_block();
+            }
         }
     }
 }
