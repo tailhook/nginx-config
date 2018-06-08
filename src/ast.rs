@@ -349,7 +349,7 @@ impl Item {
         }
     }
 
-    pub(crate) fn children(&self) -> Option<&[Directive]> {
+    pub fn children(&self) -> Option<&[Directive]> {
         use self::Item::*;
         match *self {
             Daemon(_) => None,
@@ -397,7 +397,7 @@ impl Item {
         }
     }
 
-    pub(crate) fn children_mut(&mut self) -> Option<&mut Vec<Directive>> {
+    pub fn children_mut(&mut self) -> Option<&mut Vec<Directive>> {
         use self::Item::*;
         match *self {
             Daemon(_) => None,

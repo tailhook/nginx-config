@@ -36,4 +36,5 @@ mod rewrite;
 
 pub use grammar::{parse_main, parse_directives};
 pub use format::Style;
+pub use position::Pos;
 pub use error::ParseError;
