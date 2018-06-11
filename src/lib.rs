@@ -28,6 +28,7 @@ mod tokenizer;
 mod value;
 pub mod visitors;
 
+mod access;
 mod core;
 mod gzip;
 mod headers;

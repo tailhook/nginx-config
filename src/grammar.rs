@@ -10,6 +10,7 @@ use position::Pos;
 use tokenizer::{TokenStream, Token};
 use value::Value;
 
+use access;
 use core;
 use gzip;
 use headers;
@@ -323,6 +324,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(proxy::directives),
         parser(gzip::directives),
         core::directives(),
+        access::directives(),
         parser(openresty),
         // it's own module
         ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),

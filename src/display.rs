@@ -402,6 +402,23 @@ impl Displayable for ast::Item {
                 }
                 f.end_block();
             }
+            Allow(ref source) | Deny(ref source) => {
+                use ast::Source::*;
+                f.indent();
+                f.write(self.directive_name());
+                f.write(" ");
+                match source {
+                    All => f.write("all"),
+                    Unix => f.write("unix:"),
+                    Ip(ip) => f.fmt(ip),
+                    Network(ip, bits) => {
+                        f.fmt(ip);
+                        f.write("/");
+                        f.fmt(bits);
+                    }
+                }
+                f.end();
+            }
         }
     }
 }

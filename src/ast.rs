@@ -2,7 +2,7 @@
 
 #![allow(missing_docs)] // structures are meant to be self-descriptive
 use std::path::PathBuf;
-use std::net::SocketAddr;
+use std::net::{SocketAddr, IpAddr};
 
 pub use value::{Value};
 use position::Pos;
@@ -252,6 +252,14 @@ pub struct Expires {
     pub value: Value,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Source {
+    All,
+    Unix,
+    Ip(IpAddr),
+    Network(IpAddr, u8),
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -297,6 +305,9 @@ pub enum Item {
     SslCertificateByLuaFile(Value),
     SslSessionFetchByLuaFile(Value),
     SslSessionStoreByLuaFile(Value),
+    // access module
+    Allow(Source),
+    Deny(Source),
 }
 
 impl Item {
@@ -346,6 +357,8 @@ impl Item {
             SslCertificateByLuaFile(..) => "ssl_certificate_by_lua_file",
             SslSessionFetchByLuaFile(..) => "ssl_session_fetch_by_lua_file",
             SslSessionStoreByLuaFile(..) => "ssl_session_store_by_lua_file",
+            Allow(..) => "allow",
+            Deny(..) => "deny",
         }
     }
 
@@ -394,6 +407,9 @@ impl Item {
             SslCertificateByLuaFile(..) => None,
             SslSessionFetchByLuaFile(..) => None,
             SslSessionStoreByLuaFile(..) => None,
+            // access
+            Allow(..) => None,
+            Deny(..) => None,
         }
     }
 
@@ -442,6 +458,9 @@ impl Item {
             SslCertificateByLuaFile(..) => None,
             SslSessionFetchByLuaFile(..) => None,
             SslSessionStoreByLuaFile(..) => None,
+            // access
+            Allow(..) => None,
+            Deny(..) => None,
         }
     }
 
@@ -548,6 +567,9 @@ impl Item {
             SslCertificateByLuaFile(ref mut v) => f(v),
             SslSessionFetchByLuaFile(ref mut v) => f(v),
             SslSessionStoreByLuaFile(ref mut v) => f(v),
+            // access
+            Allow(..) => {},
+            Deny(..) => {},
         }
     }
 }
