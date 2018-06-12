@@ -81,12 +81,6 @@ impl Displayable for ast::Item {
                 f.indent();
                 lst.display(f);
             }
-            ProxyPass(ref val) => {
-                f.indent();
-                f.write("proxy_pass ");
-                val.display(f);
-                f.end();
-            }
             ProxySetHeader { ref field, ref value } => {
                 f.indent();
                 f.write("proxy_set_header ");
@@ -247,6 +241,8 @@ impl Displayable for ast::Item {
             | SslSessionStoreByLuaFile(ref val)
             | SslCertificate(ref val)
             | SslCertificateKey(ref val)
+            | ProxyPass(ref val)
+            | ProxyMethod(ref val)
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }

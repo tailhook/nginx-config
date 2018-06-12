@@ -272,6 +272,7 @@ pub enum Item {
     Listen(Listen),
     ProxyPass(Value),
     ProxySetHeader { field: Value, value: Value },
+    ProxyMethod(Value),
     Gzip(bool),
     GzipStatic(GzipStatic),
     GzipProxied(Vec<GzipProxied>),
@@ -325,6 +326,7 @@ impl Item {
             Listen(..) => "listen",
             ProxyPass(..) => "proxy_pass",
             ProxySetHeader {..} => "proxy_set_header",
+            ProxyMethod {..} => "proxy_method",
             Gzip(..) => "gzip",
             GzipStatic(..) => "gzip_static",
             GzipProxied(..) => "gzip_proxied",
@@ -376,6 +378,7 @@ impl Item {
             Listen(_) => None,
             ProxyPass(_) => None,
             ProxySetHeader {..} => None,
+            ProxyMethod {..} => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -428,6 +431,7 @@ impl Item {
             Listen(_) => None,
             ProxyPass(_) => None,
             ProxySetHeader {..} => None,
+            ProxyMethod {..} => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -493,6 +497,7 @@ impl Item {
                 f(field);
                 f(value);
             }
+            ProxyMethod(ref mut v) => f(v),
             Gzip(_) => {},
             GzipStatic(_) => {},
             GzipProxied(_) => {},

@@ -16,5 +16,7 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
         ident("proxy_set_header").with(parser(value)).and(parser(value))
             .skip(semi())
             .map(|(field, value)| Item::ProxySetHeader { field, value }),
+        ident("proxy_method").with(parser(value)).skip(semi())
+            .map(Item::ProxyMethod),
     )).parse_stream(input)
 }
