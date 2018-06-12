@@ -6,7 +6,7 @@ use combine::error::StreamError;
 use combine::easy::Error;
 
 use ast::{self, Item};
-use grammar::{value, Code};
+use grammar::{value, bool, Code};
 use helpers::{semi, ident, string, prefix};
 use tokenizer::{TokenStream, Token};
 use value::Value;
@@ -165,5 +165,6 @@ pub fn directives<'a>()
         ident("root").with(parser(value)).skip(semi()).map(Item::Root),
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
         ident("internal").skip(semi()).map(|_| Item::Internal),
+        ident("etag").with(parser(bool)).skip(semi()).map(Item::Etag),
     ))
 }

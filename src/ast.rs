@@ -291,6 +291,7 @@ pub enum Item {
     Include(Value),
     EmptyGif,
     Internal,
+    Etag(bool),
     SslCertificate(Value),
     SslCertificateKey(Value),
     // openresty
@@ -343,6 +344,7 @@ impl Item {
             Include(..) => "include",
             EmptyGif => "empty_gif",
             Internal => "internal",
+            Etag(..) => "etag",
             SslCertificate(..) => "ssl_certificate",
             SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
@@ -393,6 +395,7 @@ impl Item {
             Include(..) => None,
             EmptyGif => None,
             Internal => None,
+            Etag(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -444,6 +447,7 @@ impl Item {
             Include(..) => None,
             EmptyGif => None,
             Internal => None,
+            Etag(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -536,6 +540,7 @@ impl Item {
             Include(ref mut v) => f(v),
             EmptyGif => {}
             Internal => {}
+            Etag(..) => {}
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},

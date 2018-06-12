@@ -95,9 +95,10 @@ impl Displayable for ast::Item {
                 value.display(f);
                 f.end();
             }
-            Gzip(opt) => {
+            Gzip(opt) | Etag(opt) => {
                 f.indent();
-                f.write("gzip ");
+                f.write(self.directive_name());
+                f.write(" ");
                 f.write(if opt { "on" } else { "off" });
                 f.end();
             }

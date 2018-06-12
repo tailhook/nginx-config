@@ -44,5 +44,6 @@ fn roundtrip(filename: &str) {
 #[test] fn expires() { roundtrip("expires"); }
 #[test] fn ifs() { roundtrip("ifs"); }
 #[test] fn allow_deny() { roundtrip("allow_deny"); }
+#[test] fn etag() { roundtrip("etag"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }
