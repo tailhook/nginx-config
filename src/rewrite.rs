@@ -1,5 +1,5 @@
 use combine::{parser, Parser};
-use combine::{choice, optional, many1};
+use combine::{choice, optional, many1, position};
 use combine::error::StreamError;
 use combine::easy::Error;
 
@@ -8,7 +8,7 @@ use grammar::{value, block, Code};
 use helpers::{semi, ident, string};
 use position::Pos;
 use tokenizer::{TokenStream, Token};
-use value::{self, Value};
+use value::{Value};
 
 
 fn rewrite<'a>()
@@ -112,15 +112,18 @@ fn return_directive<'a>()
     .skip(semi())
 }
 
-fn strip_open_paren<'a>(v: &'_ mut Vec<value::Item>)
+fn strip_open_paren<'a>(v: &'_ mut Vec<&'a str>)
     -> Result<(), Error<Token<'a>, Token<'a>>>
 {
-    use value::Item::*;
     match v.get_mut(0) {
-        Some(Literal(s)) if s.starts_with('(') => {
-            if s != "(" {
-                *s = s[1..].to_string();
-                return Ok(())
+        Some(s) => {
+            if s.starts_with('(') {
+                if &s[..] != "(" {
+                    *s = &s[1..];
+                    return Ok(())
+                }
+            } else {
+                return Err(Error::unexpected_message("missing parenthesis"));
             }
         }
         _ => return Err(Error::unexpected_message("missing parenthesis")),
@@ -129,16 +132,19 @@ fn strip_open_paren<'a>(v: &'_ mut Vec<value::Item>)
     Ok(())
 }
 
-fn strip_close_paren<'a>(v: &'_ mut Vec<value::Item>)
+fn strip_close_paren<'a>(v: &'_ mut Vec<&'a str>)
     -> Result<(), Error<Token<'a>, Token<'a>>>
 {
-    use value::Item::*;
     match v.last_mut() {
-        Some(Literal(s)) if s.ends_with(')') => {
-            if s != ")" {
-                let new_len = s.len()-1;
-                s.truncate(new_len);
-                return Ok(())
+        Some(s) => {
+            if s.ends_with(')') {
+                if &s[..] != ")" {
+                    let new_len = s.len()-1;
+                    *s = &s[..new_len];
+                    return Ok(());
+                }
+            } else {
+                return Err(Error::unexpected_message("missing parenthesis"));
             }
         }
         _ => return Err(Error::unexpected_message("missing parenthesis")),
@@ -147,18 +153,16 @@ fn strip_close_paren<'a>(v: &'_ mut Vec<value::Item>)
     Ok(())
 }
 
-fn parse_unary<'a>(mut v: Vec<value::Item>, position: Pos)
+fn parse_unary<'a>(mut v: Vec<&str>, position: Pos)
     -> Result<ast::IfCondition, Error<Token<'a>, Token<'a>>>
 {
     use ast::IfCondition::*;
-    use value::Item::*;
 
     let oper = v.remove(0);
-    let oper = match &oper {
-        Literal(x) => &x[..],
-        _ => unreachable!(),
-    };
-    let right = Value { position, data: v };
+    let right = Value::parse_str(position, v.remove(0))?;
+    if v.len() > 0 {
+        return Err(Error::unexpected_message("extra argument to condition"));
+    }
     match oper {
         "-d" => return Ok(DirExists(right)),
         "!-d" => return Ok(DirNotExists(right)),
@@ -172,26 +176,18 @@ fn parse_unary<'a>(mut v: Vec<value::Item>, position: Pos)
     }
 }
 
-fn parse_binary<'a>(mut v: Vec<value::Item>, position: Pos)
+fn parse_binary<'a>(mut v: Vec<&str>, position: Pos)
     -> Result<ast::IfCondition, Error<Token<'a>, Token<'a>>>
 {
     use ast::IfCondition::*;
-    use value::Item::*;
 
-    let left = Value { position, data: vec![v.remove(0)] };
+    let left = Value::parse_str(position, v.remove(0))?;
     if v.len() == 0 {
         return Ok(NonEmpty(left));
     }
     let oper = v.remove(0);
-    let oper = match &oper {
-        Literal(x) => &x[..],
-        Variable(..) => {
-            return Err(Error::unexpected_message(
-                "operator expected, variable vound"));
-        }
-    };
     let right = match &v[..] {
-        [Literal(x)] => x.to_string(),
+        [x] => x.to_string(),
         _ => return Err(Error::unexpected_message(
                 "you can only compare against a single literal")),
     };
@@ -209,19 +205,23 @@ fn parse_binary<'a>(mut v: Vec<value::Item>, position: Pos)
 fn if_directive<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
-    use value::Item::*;
     ident("if")
-    .with(many1(parser(value)))
-    .and_then(|v: Vec<_>| -> Result<_, Error<_, _>> {
-        let pos = v[0].position;
-        let mut v = v.into_iter().flat_map(|x| x.data.into_iter()).collect();
+    .with(position())
+    .and(many1(string()))
+    .and_then(|(pos, v): (_, Vec<_>)| -> Result<_, Error<_, _>> {
+        let mut v = v.iter().map(|t| t.value).collect();
         strip_open_paren(&mut v)?;
         strip_close_paren(&mut v)?;
-        match v.get(0) {
-            Some(Variable(..)) => parse_binary(v, pos),
-            Some(Literal(..)) => parse_unary(v, pos),
+        let binary = match v.get(0) {
+            Some(x) if x.starts_with('$') => true,
+            Some(_) => false,
             None => return Err(Error::unexpected_message(
                 "missing parenthesis")),
+        };
+        if binary {
+            parse_binary(v, pos)
+        } else {
+            parse_unary(v, pos)
         }
     })
     .and(parser(block))

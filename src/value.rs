@@ -30,12 +30,17 @@ impl Value {
     pub(crate) fn parse<'a>(position: Pos, tok: Token<'a>)
         -> Result<Value, Error<Token<'a>, Token<'a>>>
     {
-        let data = if tok.value.starts_with('"') {
-            Value::scan_quoted('"', tok.value)?
-        } else if tok.value.starts_with("'") {
-            Value::scan_quoted('\'', tok.value)?
+        Value::parse_str(position, tok.value)
+    }
+    pub(crate) fn parse_str<'a>(position: Pos, token: &str)
+        -> Result<Value, Error<Token<'a>, Token<'a>>>
+    {
+        let data = if token.starts_with('"') {
+            Value::scan_quoted('"', token)?
+        } else if token.starts_with("'") {
+            Value::scan_quoted('\'', token)?
         } else {
-            Value::scan_raw(tok.value)?
+            Value::scan_raw(token)?
         };
         Ok(Value { position, data })
     }
