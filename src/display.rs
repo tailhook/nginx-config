@@ -51,6 +51,7 @@ impl Displayable for ast::Item {
             | Gzip(opt)
             | Etag(opt)
             | RecursiveErrorPages(opt)
+            | ChunkedTransferEncoding(opt)
             => {
                 f.indent();
                 f.write(self.directive_name());

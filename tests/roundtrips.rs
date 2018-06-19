@@ -46,5 +46,6 @@ fn roundtrip(filename: &str) {
 #[test] fn allow_deny() { roundtrip("allow_deny"); }
 #[test] fn etag() { roundtrip("etag"); }
 #[test] fn recursive_error_pages() { roundtrip("recursive_error_pages"); }
+#[test] fn chunked() { roundtrip("chunked"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

@@ -168,5 +168,7 @@ pub fn directives<'a>()
         ident("etag").with(parser(bool)).skip(semi()).map(Item::Etag),
         ident("recursive_error_pages").with(parser(bool)).skip(semi())
             .map(Item::RecursiveErrorPages),
+        ident("chunked_transfer_encoding").with(parser(bool)).skip(semi())
+            .map(Item::ChunkedTransferEncoding),
     ))
 }

@@ -309,6 +309,7 @@ pub enum Item {
     Internal,
     Etag(bool),
     RecursiveErrorPages(bool),
+    ChunkedTransferEncoding(bool),
     SslCertificate(Value),
     SslCertificateKey(Value),
     // openresty
@@ -373,6 +374,7 @@ impl Item {
             Internal => "internal",
             Etag(..) => "etag",
             RecursiveErrorPages(..) => "recursive_error_pages",
+            ChunkedTransferEncoding(..) => "chunked_transfer_encoding",
             SslCertificate(..) => "ssl_certificate",
             SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
@@ -435,6 +437,7 @@ impl Item {
             Internal => None,
             Etag(..) => None,
             RecursiveErrorPages(..) => None,
+            ChunkedTransferEncoding(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -498,6 +501,7 @@ impl Item {
             Internal => None,
             Etag(..) => None,
             RecursiveErrorPages(..) => None,
+            ChunkedTransferEncoding(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -602,6 +606,7 @@ impl Item {
             Internal => {}
             Etag(..) => {}
             RecursiveErrorPages(..) => {}
+            ChunkedTransferEncoding(..) => {}
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},
