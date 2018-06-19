@@ -28,6 +28,8 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .map(Item::ProxyPassRequestHeaders),
         ident("proxy_pass_request_body").with(parser(bool)).skip(semi())
             .map(Item::ProxyPassRequestBody),
+        ident("proxy_intercept_errors").with(parser(bool)).skip(semi())
+            .map(Item::ProxyInterceptErrors),
         ident("proxy_ignore_headers").with(many1(string())).skip(semi())
             .map(|v: Vec<_>| {
                 v.into_iter().map(|v| v.value.to_string()).collect()
