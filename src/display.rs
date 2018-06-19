@@ -50,6 +50,7 @@ impl Displayable for ast::Item {
             | ProxyInterceptErrors(opt)
             | Gzip(opt)
             | Etag(opt)
+            | RecursiveErrorPages(opt)
             => {
                 f.indent();
                 f.write(self.directive_name());

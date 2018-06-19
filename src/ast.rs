@@ -306,6 +306,7 @@ pub enum Item {
     EmptyGif,
     Internal,
     Etag(bool),
+    RecursiveErrorPages(bool),
     SslCertificate(Value),
     SslCertificateKey(Value),
     // openresty
@@ -367,6 +368,7 @@ impl Item {
             EmptyGif => "empty_gif",
             Internal => "internal",
             Etag(..) => "etag",
+            RecursiveErrorPages(..) => "recursive_error_pages",
             SslCertificate(..) => "ssl_certificate",
             SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
@@ -426,6 +428,7 @@ impl Item {
             EmptyGif => None,
             Internal => None,
             Etag(..) => None,
+            RecursiveErrorPages(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -486,6 +489,7 @@ impl Item {
             EmptyGif => None,
             Internal => None,
             Etag(..) => None,
+            RecursiveErrorPages(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -587,6 +591,7 @@ impl Item {
             EmptyGif => {}
             Internal => {}
             Etag(..) => {}
+            RecursiveErrorPages(..) => {}
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},
