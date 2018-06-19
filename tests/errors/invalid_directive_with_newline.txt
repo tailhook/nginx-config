@@ -3,4 +3,4 @@ proxy_pass_header
 ---
 parse error: Parse error at 1:1
 Unexpected `proxy_pass_header`
-Expected `proxy_pass`, `proxy_set_header`, `proxy_method` or `one of <N> options`
+Expected `proxy_pass`, `proxy_set_header`, `proxy_http_version` or `one of <N> options`

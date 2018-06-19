@@ -416,6 +416,15 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            ProxyHttpVersion(ver) => {
+                use ast::ProxyHttpVersion::*;
+                f.indent();
+                match ver {
+                    V1_0 => f.write("proxy_http_version 1.0"),
+                    V1_1 => f.write("proxy_http_version 1.1"),
+                }
+                f.end();
+            }
         }
     }
 }

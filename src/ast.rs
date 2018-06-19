@@ -260,6 +260,12 @@ pub enum Source {
     Network(IpAddr, u8),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+pub enum ProxyHttpVersion {
+    V1_0,
+    V1_1,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -273,6 +279,7 @@ pub enum Item {
     ProxyPass(Value),
     ProxySetHeader { field: Value, value: Value },
     ProxyMethod(Value),
+    ProxyHttpVersion(ProxyHttpVersion),
     Gzip(bool),
     GzipStatic(GzipStatic),
     GzipProxied(Vec<GzipProxied>),
@@ -327,6 +334,7 @@ impl Item {
             ProxyPass(..) => "proxy_pass",
             ProxySetHeader {..} => "proxy_set_header",
             ProxyMethod {..} => "proxy_method",
+            ProxyHttpVersion {..} => "proxy_http_version",
             Gzip(..) => "gzip",
             GzipStatic(..) => "gzip_static",
             GzipProxied(..) => "gzip_proxied",
@@ -379,6 +387,7 @@ impl Item {
             ProxyPass(_) => None,
             ProxySetHeader {..} => None,
             ProxyMethod {..} => None,
+            ProxyHttpVersion {..} => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -432,6 +441,7 @@ impl Item {
             ProxyPass(_) => None,
             ProxySetHeader {..} => None,
             ProxyMethod {..} => None,
+            ProxyHttpVersion {..} => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -498,6 +508,7 @@ impl Item {
                 f(value);
             }
             ProxyMethod(ref mut v) => f(v),
+            ProxyHttpVersion(..) => {},
             Gzip(_) => {},
             GzipStatic(_) => {},
             GzipProxied(_) => {},
