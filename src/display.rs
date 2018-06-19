@@ -43,15 +43,16 @@ impl Displayable for ast::Item {
     fn display(&self, f: &mut Formatter) {
         use ast::Item::*;
         match *self {
-            Daemon(opt) => {
+            | Daemon(opt)
+            | MasterProcess(opt)
+            | ProxyPassRequestHeaders(opt)
+            | ProxyPassRequestBody(opt)
+            | Gzip(opt)
+            | Etag(opt)
+            => {
                 f.indent();
-                f.write("daemon ");
-                f.write(if opt { "on" } else { "off" });
-                f.end();
-            }
-            MasterProcess(opt) => {
-                f.indent();
-                f.write("master_process ");
+                f.write(self.directive_name());
+                f.write(" ");
                 f.write(if opt { "on" } else { "off" });
                 f.end();
             }
@@ -87,13 +88,6 @@ impl Displayable for ast::Item {
                 field.display(f);
                 f.write(" ");
                 value.display(f);
-                f.end();
-            }
-            Gzip(opt) | Etag(opt) => {
-                f.indent();
-                f.write(self.directive_name());
-                f.write(" ");
-                f.write(if opt { "on" } else { "off" });
                 f.end();
             }
             GzipStatic(opt) => {

@@ -6,7 +6,7 @@ use combine::easy::Error;
 use ast::{self, Item};
 use helpers::{semi, ident, string};
 use tokenizer::TokenStream;
-use grammar::value;
+use grammar::{value, bool};
 
 
 pub fn directives<'a>(input: &mut TokenStream<'a>)
@@ -24,6 +24,10 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .map(Item::ProxyHideHeader),
         ident("proxy_pass_header").with(parser(value)).skip(semi())
             .map(Item::ProxyPassHeader),
+        ident("proxy_pass_request_headers").with(parser(bool)).skip(semi())
+            .map(Item::ProxyPassRequestHeaders),
+        ident("proxy_pass_request_body").with(parser(bool)).skip(semi())
+            .map(Item::ProxyPassRequestBody),
         ident("proxy_ignore_headers").with(many1(string())).skip(semi())
             .map(|v: Vec<_>| {
                 v.into_iter().map(|v| v.value.to_string()).collect()
