@@ -239,6 +239,8 @@ impl Displayable for ast::Item {
             | SslCertificateKey(ref val)
             | ProxyPass(ref val)
             | ProxyMethod(ref val)
+            | ProxyReadTimeout(ref val)
+            | ProxyConnectTimeout(ref val)
             | ProxyHideHeader(ref val)
             | ProxyPassHeader(ref val)
             => {
