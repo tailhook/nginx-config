@@ -243,6 +243,8 @@ impl Displayable for ast::Item {
             | SslCertificateKey(ref val)
             | ProxyPass(ref val)
             | ProxyMethod(ref val)
+            | ProxyHideHeader(ref val)
+            | ProxyPassHeader(ref val)
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }

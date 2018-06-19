@@ -20,6 +20,10 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .map(|(field, value)| Item::ProxySetHeader { field, value }),
         ident("proxy_method").with(parser(value)).skip(semi())
             .map(Item::ProxyMethod),
+        ident("proxy_hide_header").with(parser(value)).skip(semi())
+            .map(Item::ProxyHideHeader),
+        ident("proxy_pass_header").with(parser(value)).skip(semi())
+            .map(Item::ProxyPassHeader),
         ident("proxy_http_version")
             .with(string()).and_then(|v| {
                 match v.value {

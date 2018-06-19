@@ -1,6 +1,6 @@
-proxy_pass_header
+proxy_churn_header
     X-My-Header Value;
 ---
 parse error: Parse error at 1:1
-Unexpected `proxy_pass_header`
-Expected `proxy_pass`, `proxy_set_header`, `proxy_http_version` or `one of <N> options`
+Unexpected `proxy_churn_header`
+Expected `proxy_hide_header`, `proxy_set_header`, `proxy_pass_header` or `one of <N> options`
