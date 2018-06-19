@@ -2,4 +2,4 @@ proxy_get_header;
 ---
 parse error: Parse error at 1:1
 Unexpected `proxy_get_header`
-Expected `proxy_set_header`, `proxy_hide_header`, `proxy_method` or `one of <N> options`
+Expected `proxy_set_header`, `proxy_ignore_headers`, `proxy_hide_header` or `one of <N> options`

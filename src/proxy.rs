@@ -1,5 +1,5 @@
 use combine::{ParseResult, parser, Parser};
-use combine::{choice};
+use combine::{choice, many1};
 use combine::error::StreamError;
 use combine::easy::Error;
 
@@ -24,6 +24,11 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .map(Item::ProxyHideHeader),
         ident("proxy_pass_header").with(parser(value)).skip(semi())
             .map(Item::ProxyPassHeader),
+        ident("proxy_ignore_headers").with(many1(string())).skip(semi())
+            .map(|v: Vec<_>| {
+                v.into_iter().map(|v| v.value.to_string()).collect()
+            })
+            .map(Item::ProxyIgnoreHeaders),
         ident("proxy_http_version")
             .with(string()).and_then(|v| {
                 match v.value {

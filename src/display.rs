@@ -427,6 +427,15 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            ProxyIgnoreHeaders(ref headers) => {
+                f.indent();
+                f.write(self.directive_name());
+                for h in headers {
+                    f.write(" ");
+                    f.write(&escape(h));
+                }
+                f.end();
+            }
         }
     }
 }
