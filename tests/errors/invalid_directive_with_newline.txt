@@ -3,4 +3,4 @@ proxy_churn_header
 ---
 parse error: Parse error at 1:1
 Unexpected `proxy_churn_header`
-Expected `proxy_connect_timeout`, `proxy_read_timeout`, `proxy_hide_header` or `one of <N> options`
+Expected `proxy_cache`, `proxy_connect_timeout`, `proxy_read_timeout` or `one of <N> options`

@@ -20,6 +20,8 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .map(|(field, value)| Item::ProxySetHeader { field, value }),
         ident("proxy_method").with(parser(value)).skip(semi())
             .map(Item::ProxyMethod),
+        ident("proxy_cache").with(parser(value)).skip(semi())
+            .map(Item::ProxyCache),
         ident("proxy_read_timeout").with(parser(value)).skip(semi())
             .map(Item::ProxyReadTimeout),
         ident("proxy_connect_timeout").with(parser(value)).skip(semi())

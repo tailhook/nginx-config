@@ -239,6 +239,7 @@ impl Displayable for ast::Item {
             | SslCertificate(ref val)
             | SslCertificateKey(ref val)
             | ProxyPass(ref val)
+            | ProxyCache(ref val)
             | ProxyMethod(ref val)
             | ProxyReadTimeout(ref val)
             | ProxyConnectTimeout(ref val)
