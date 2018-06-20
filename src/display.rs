@@ -437,6 +437,30 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            ProxyCacheValid(ref val) => {
+                use ast::ProxyCacheValid::*;
+                f.indent();
+                f.write(self.directive_name());
+                match val {
+                    Normal(ref val) => {
+                        f.write(" ");
+                        val.display(f);
+                    }
+                    Specific(ref codes, ref val) => {
+                        for code in codes {
+                            f.write(" ");
+                            f.fmt(&code);
+                        }
+                        f.write(" ");
+                        val.display(f);
+                    }
+                    Any(ref val) => {
+                        f.write(" any ");
+                        val.display(f);
+                    }
+                }
+                f.end();
+            }
         }
     }
 }

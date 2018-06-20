@@ -266,6 +266,13 @@ pub enum ProxyHttpVersion {
     V1_1,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProxyCacheValid {
+    Normal(Value),
+    Specific(Vec<u32>, Value),
+    Any(Value),
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -290,6 +297,7 @@ pub enum Item {
     ProxyInterceptErrors(bool),
     ProxyCache(Value),
     ProxyCacheKey(Value),
+    ProxyCacheValid(ProxyCacheValid),
     Gzip(bool),
     GzipStatic(GzipStatic),
     GzipProxied(Vec<GzipProxied>),
@@ -357,6 +365,7 @@ impl Item {
             ProxyInterceptErrors(..) => "proxy_intercept_errors",
             ProxyCache(..) => "proxy_cache",
             ProxyCacheKey(..) => "proxy_cache_key",
+            ProxyCacheValid(..) => "proxy_cache_valid",
             Gzip(..) => "gzip",
             GzipStatic(..) => "gzip_static",
             GzipProxied(..) => "gzip_proxied",
@@ -422,6 +431,7 @@ impl Item {
             ProxyInterceptErrors(..) => None,
             ProxyCache(..) => None,
             ProxyCacheKey(..) => None,
+            ProxyCacheValid(..) => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -488,6 +498,7 @@ impl Item {
             ProxyInterceptErrors {..} => None,
             ProxyCache {..} => None,
             ProxyCacheKey {..} => None,
+            ProxyCacheValid {..} => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -562,6 +573,9 @@ impl Item {
             ProxyPassHeader(ref mut v) => f(v),
             ProxyCache(ref mut v) => f(v),
             ProxyCacheKey(ref mut v) => f(v),
+            ProxyCacheValid(self::ProxyCacheValid::Normal(ref mut v)) => f(v),
+            ProxyCacheValid(self::ProxyCacheValid::Specific(_, ref mut v)) => f(v),
+            ProxyCacheValid(self::ProxyCacheValid::Any(ref mut v)) => f(v),
             ProxyPassRequestHeaders(_) => {},
             ProxyPassRequestBody(_) => {},
             ProxyHttpVersion(..) => {},
