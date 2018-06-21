@@ -9,7 +9,7 @@ keywords = ["nginx", "config", "parser"]
 categories = ["parser-implementations"]
 homepage = "https://github.com/tailhook/nginx-config"
 documentation = "https://docs.rs/nginx-config"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["paul@colomiets.name"]
 
 [dependencies]
