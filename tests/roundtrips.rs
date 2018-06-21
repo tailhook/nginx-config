@@ -48,5 +48,6 @@ fn roundtrip(filename: &str) {
 #[test] fn recursive_error_pages() { roundtrip("recursive_error_pages"); }
 #[test] fn chunked() { roundtrip("chunked"); }
 #[test] fn keep_alive_timeout() { roundtrip("keep_alive_timeout"); }
+#[test] fn server_tokens() { roundtrip("server_tokens"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

@@ -324,6 +324,7 @@ pub enum Item {
     RecursiveErrorPages(bool),
     ChunkedTransferEncoding(bool),
     KeepaliveTimeout(Value, Option<Value>),
+    ServerTokens(Value),
     SslCertificate(Value),
     SslCertificateKey(Value),
     // openresty
@@ -396,6 +397,7 @@ impl Item {
             RecursiveErrorPages(..) => "recursive_error_pages",
             ChunkedTransferEncoding(..) => "chunked_transfer_encoding",
             KeepaliveTimeout(..) => "keepalive_timeout",
+            ServerTokens(..) => "server_tokens",
             SslCertificate(..) => "ssl_certificate",
             SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
@@ -466,6 +468,7 @@ impl Item {
             RecursiveErrorPages(..) => None,
             ChunkedTransferEncoding(..) => None,
             KeepaliveTimeout(..) => None,
+            ServerTokens(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -537,6 +540,7 @@ impl Item {
             RecursiveErrorPages(..) => None,
             ChunkedTransferEncoding(..) => None,
             KeepaliveTimeout(..) => None,
+            ServerTokens(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -656,6 +660,7 @@ impl Item {
                     f(b);
                 }
             }
+            ServerTokens(ref mut v) => f(v),
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},

@@ -166,6 +166,8 @@ pub fn directives<'a>()
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
         ident("internal").skip(semi()).map(|_| Item::Internal),
         ident("etag").with(parser(bool)).skip(semi()).map(Item::Etag),
+        ident("server_tokens").with(parser(value)).skip(semi())
+            .map(Item::ServerTokens),
         ident("recursive_error_pages").with(parser(bool)).skip(semi())
             .map(Item::RecursiveErrorPages),
         ident("chunked_transfer_encoding").with(parser(bool)).skip(semi())
