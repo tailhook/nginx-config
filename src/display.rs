@@ -246,6 +246,8 @@ impl Displayable for ast::Item {
             | ProxyConnectTimeout(ref val)
             | ProxyHideHeader(ref val)
             | ProxyPassHeader(ref val)
+            | ProxyNextUpstreamTries(ref val)
+            | ProxyNextUpstreamTimeout(ref val)
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }

@@ -96,5 +96,9 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             })
             .skip(semi())
             .map(Item::ProxyHttpVersion),
+        ident("proxy_next_upstream_tries").with(parser(value)).skip(semi())
+            .map(Item::ProxyNextUpstreamTries),
+        ident("proxy_next_upstream_timeout").with(parser(value)).skip(semi())
+            .map(Item::ProxyNextUpstreamTimeout),
     )).parse_stream(input)
 }
