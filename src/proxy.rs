@@ -81,6 +81,8 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .map(Item::ProxyPassRequestBody),
         ident("proxy_intercept_errors").with(parser(bool)).skip(semi())
             .map(Item::ProxyInterceptErrors),
+        ident("proxy_buffering").with(parser(bool)).skip(semi())
+            .map(Item::ProxyBuffering),
         ident("proxy_ignore_headers").with(many1(string())).skip(semi())
             .map(|v: Vec<_>| {
                 v.into_iter().map(|v| v.value.to_string()).collect()

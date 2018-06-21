@@ -48,6 +48,7 @@ impl Displayable for ast::Item {
             | ProxyPassRequestHeaders(opt)
             | ProxyPassRequestBody(opt)
             | ProxyInterceptErrors(opt)
+            | ProxyBuffering(opt)
             | Gzip(opt)
             | Etag(opt)
             | RecursiveErrorPages(opt)
