@@ -323,6 +323,7 @@ pub enum Item {
     Etag(bool),
     RecursiveErrorPages(bool),
     ChunkedTransferEncoding(bool),
+    KeepaliveTimeout(Value, Option<Value>),
     SslCertificate(Value),
     SslCertificateKey(Value),
     // openresty
@@ -394,6 +395,7 @@ impl Item {
             Etag(..) => "etag",
             RecursiveErrorPages(..) => "recursive_error_pages",
             ChunkedTransferEncoding(..) => "chunked_transfer_encoding",
+            KeepaliveTimeout(..) => "keepalive_timeout",
             SslCertificate(..) => "ssl_certificate",
             SslCertificateKey(..) => "ssl_certificate_key",
             // openresty
@@ -463,6 +465,7 @@ impl Item {
             Etag(..) => None,
             RecursiveErrorPages(..) => None,
             ChunkedTransferEncoding(..) => None,
+            KeepaliveTimeout(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -533,6 +536,7 @@ impl Item {
             Etag(..) => None,
             RecursiveErrorPages(..) => None,
             ChunkedTransferEncoding(..) => None,
+            KeepaliveTimeout(..) => None,
             SslCertificate(..) => None,
             SslCertificateKey(..) => None,
             // openresty
@@ -646,6 +650,12 @@ impl Item {
             Etag(..) => {}
             RecursiveErrorPages(..) => {}
             ChunkedTransferEncoding(..) => {}
+            KeepaliveTimeout(ref mut a, ref mut b) => {
+                f(a);
+                if let Some(b) = b {
+                    f(b);
+                }
+            }
             SslCertificate(ref mut v) => f(v),
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},

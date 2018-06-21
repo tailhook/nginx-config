@@ -464,6 +464,17 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            KeepaliveTimeout(ref timeo, ref header_timeo) => {
+                f.indent();
+                f.write(self.directive_name());
+                f.write(" ");
+                timeo.display(f);
+                if let Some(header_timeo) = header_timeo {
+                    f.write(" ");
+                    header_timeo.display(f);
+                }
+                f.end();
+            }
         }
     }
 }

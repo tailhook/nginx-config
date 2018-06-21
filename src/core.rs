@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use combine::{many, parser, Parser};
-use combine::{choice};
+use combine::{choice, optional};
 use combine::error::StreamError;
 use combine::easy::Error;
 
@@ -170,5 +170,10 @@ pub fn directives<'a>()
             .map(Item::RecursiveErrorPages),
         ident("chunked_transfer_encoding").with(parser(bool)).skip(semi())
             .map(Item::ChunkedTransferEncoding),
+        ident("keepalive_timeout")
+            .with(parser(value))
+            .and(optional(parser(value)))
+            .map(|(timeo, htimeo)| Item::KeepaliveTimeout(timeo, htimeo))
+            .skip(semi()),
     ))
 }
