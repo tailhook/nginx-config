@@ -93,7 +93,30 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
                 match v.value {
                     "1.0" => Ok(ast::ProxyHttpVersion::V1_0),
                     "1.1" => Ok(ast::ProxyHttpVersion::V1_1),
-                    _ => Err(Error::unexpected_message("invalid variable")),
+                    _ => Err(Error::unexpected_message(
+                        "invalid http version")),
+                }
+            })
+            .skip(semi())
+            .map(Item::ProxyHttpVersion),
+        ident("proxy_next_upstream")
+            .with(many1(string())).and_then(|v| {
+                use ast::ProxyNextUpstreamFlag::*;
+                match v.value {
+                    "error" => Error,
+                    "timeout" => Timeout,
+                    "invalid_header" => InvalidHeader,
+                    "http_500" => Http500,
+                    "http_502" => Http502,
+                    "http_503" => Http503,
+                    "http_504" => Http504,
+                    "http_403" => Http403,
+                    "http_404" => Http404,
+                    "http_429" => Http429,
+                    "non_idempotent" => NonIdempotent,
+                    "off" => Off,
+                    _ => Err(Error::unexpected_message(
+                        "invalid proxy upstream flag")),
                 }
             })
             .skip(semi())

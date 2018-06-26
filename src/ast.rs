@@ -273,6 +273,22 @@ pub enum ProxyCacheValid {
     Any(Value),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProxyNextUpstreamFlag {
+    Error,
+    Timeout,
+    InvalidHeader,
+    Http500,
+    Http502,
+    Http503,
+    Http504,
+    Http403,
+    Http404,
+    Http429,
+    NonIdempotent,
+    Off,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -301,6 +317,7 @@ pub enum Item {
     ProxyCacheValid(ProxyCacheValid),
     ProxyNextUpstreamTries(Value),
     ProxyNextUpstreamTimeout(Value),
+    ProxyNextUpstream(Vec<ProxyNextUpstreamFlag>),
     Gzip(bool),
     GzipStatic(GzipStatic),
     GzipProxied(Vec<GzipProxied>),
@@ -374,6 +391,7 @@ impl Item {
             ProxyCacheValid(..) => "proxy_cache_valid",
             ProxyNextUpstreamTries(..) => "proxy_next_upstream_tries",
             ProxyNextUpstreamTimeout(..) => "proxy_next_upstream_timeout",
+            ProxyNextUpstream(..) => "proxy_next_upstream",
             Gzip(..) => "gzip",
             GzipStatic(..) => "gzip_static",
             GzipProxied(..) => "gzip_proxied",
@@ -445,6 +463,7 @@ impl Item {
             ProxyCacheValid(..) => None,
             ProxyNextUpstreamTries(..) => None,
             ProxyNextUpstreamTimeout(..) => None,
+            ProxyNextUpstream(..) => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -517,6 +536,7 @@ impl Item {
             ProxyCacheValid {..} => None,
             ProxyNextUpstreamTries(..) => None,
             ProxyNextUpstreamTimeout(..) => None,
+            ProxyNextUpstream(..) => None,
             Gzip(..) => None,
             GzipStatic(..) => None,
             GzipProxied(..) => None,
@@ -604,6 +624,7 @@ impl Item {
             ProxyBuffering(..) => {},
             ProxyNextUpstreamTries(ref mut v) => f(v),
             ProxyNextUpstreamTimeout(ref mut v) => f(v),
+            ProxyNextUpstream(_) => {},
             Gzip(_) => {},
             GzipStatic(_) => {},
             GzipProxied(_) => {},

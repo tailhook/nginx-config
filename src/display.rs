@@ -476,6 +476,29 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            ProxyNextUpstream(ref items) => {
+                use ast::ProxyNextUpstreamFlag::*;
+                f.indent();
+                f.write(self.directive_name());
+                for item in items {
+                    f.write(" ");
+                    f.write(match item {
+                        Error => "error",
+                        Timeout => "timeout",
+                        InvalidHeader => "invalid_header",
+                        Http500 => "http_500",
+                        Http502 => "http_502",
+                        Http503 => "http_503",
+                        Http504 => "http_504",
+                        Http403 => "http_403",
+                        Http404 => "http_404",
+                        Http429 => "http_429",
+                        NonIdempotent => "non_idempotent",
+                        Off => "off",
+                    });
+                }
+                f.end();
+            }
         }
     }
 }
