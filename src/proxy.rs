@@ -100,27 +100,27 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             .skip(semi())
             .map(Item::ProxyHttpVersion),
         ident("proxy_next_upstream")
-            .with(many1(string())).and_then(|v| {
+            .with(many1(string().and_then(|v| {
                 use ast::ProxyNextUpstreamFlag::*;
                 match v.value {
-                    "error" => Error,
-                    "timeout" => Timeout,
-                    "invalid_header" => InvalidHeader,
-                    "http_500" => Http500,
-                    "http_502" => Http502,
-                    "http_503" => Http503,
-                    "http_504" => Http504,
-                    "http_403" => Http403,
-                    "http_404" => Http404,
-                    "http_429" => Http429,
-                    "non_idempotent" => NonIdempotent,
-                    "off" => Off,
-                    _ => Err(Error::unexpected_message(
+                    "error" => Ok(Error),
+                    "timeout" => Ok(Timeout),
+                    "invalid_header" => Ok(InvalidHeader),
+                    "http_500" => Ok(Http500),
+                    "http_502" => Ok(Http502),
+                    "http_503" => Ok(Http503),
+                    "http_504" => Ok(Http504),
+                    "http_403" => Ok(Http403),
+                    "http_404" => Ok(Http404),
+                    "http_429" => Ok(Http429),
+                    "non_idempotent" => Ok(NonIdempotent),
+                    "off" => Ok(Off),
+                    _ => Err(::combine::easy::Error::unexpected_message(
                         "invalid proxy upstream flag")),
                 }
-            })
+            })))
             .skip(semi())
-            .map(Item::ProxyHttpVersion),
+            .map(Item::ProxyNextUpstream),
         ident("proxy_next_upstream_tries").with(parser(value)).skip(semi())
             .map(Item::ProxyNextUpstreamTries),
         ident("proxy_next_upstream_timeout").with(parser(value)).skip(semi())
