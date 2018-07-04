@@ -224,6 +224,7 @@ impl Displayable for ast::Item {
             }
             | Root(ref val)
             | Alias(ref val)
+            | DefaultType(ref val)
             | ClientMaxBodySize(ref val)
             | Include(ref val)
             | RewriteByLuaFile(ref val)

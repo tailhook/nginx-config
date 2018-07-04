@@ -164,6 +164,8 @@ pub fn directives<'a>()
         listen(),
         ident("root").with(parser(value)).skip(semi()).map(Item::Root),
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
+        ident("default_type").with(parser(value)).skip(semi())
+            .map(Item::DefaultType),
         ident("internal").skip(semi()).map(|_| Item::Internal),
         ident("etag").with(parser(bool)).skip(semi()).map(Item::Etag),
         ident("server_tokens").with(parser(value)).skip(semi())
