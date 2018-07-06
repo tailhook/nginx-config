@@ -500,6 +500,41 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            AccessLog(ast::AccessLog::Off) =>  {
+                f.indent();
+                f.write("access_log off");
+                f.end();
+            }
+            AccessLog(ast::AccessLog::On(ref lg)) =>  {
+                f.indent();
+                f.write("access_log ");
+                lg.path.display(f);
+                if let Some(ref fmt) = lg.format {
+                    f.write(" ");
+                    f.fmt(&escape(fmt));
+                }
+                if let Some(ref buf) = lg.buffer {
+                    f.write(" buffer=");
+                    f.fmt(&escape(buf));
+                }
+                if let Some(ref gzip) = lg.gzip {
+                    if let Some(level) = gzip {
+                        f.write(" gzip=");
+                        f.fmt(&level);
+                    } else {
+                        f.write(" gzip");
+                    }
+                }
+                if let Some(ref flush) = lg.flush {
+                    f.write(" flush=");
+                    f.fmt(&escape(flush));
+                }
+                if let Some(ref condition) = lg.condition {
+                    f.write(" if=");
+                    condition.display(f);
+                }
+                f.end();
+            }
         }
     }
 }

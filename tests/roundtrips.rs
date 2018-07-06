@@ -50,5 +50,6 @@ fn roundtrip(filename: &str) {
 #[test] fn keep_alive_timeout() { roundtrip("keep_alive_timeout"); }
 #[test] fn server_tokens() { roundtrip("server_tokens"); }
 #[test] fn default_type() { roundtrip("default_type"); }
+#[test] fn access_log() { roundtrip("access_log"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

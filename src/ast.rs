@@ -289,6 +289,22 @@ pub enum ProxyNextUpstreamFlag {
     Off,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AccessLog {
+    Off,
+    On(AccessLogOptions),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AccessLogOptions {
+    pub path: Value,
+    pub format: Option<String>,
+    pub buffer: Option<String>,
+    pub gzip: Option<Option<u8>>,
+    pub flush: Option<String>,
+    pub condition: Option<Value>,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -360,6 +376,8 @@ pub enum Item {
     // access module
     Allow(Source),
     Deny(Source),
+    // log module
+    AccessLog(AccessLog),
 }
 
 impl Item {
@@ -432,8 +450,11 @@ impl Item {
             SslCertificateByLuaFile(..) => "ssl_certificate_by_lua_file",
             SslSessionFetchByLuaFile(..) => "ssl_session_fetch_by_lua_file",
             SslSessionStoreByLuaFile(..) => "ssl_session_store_by_lua_file",
+            // access module
             Allow(..) => "allow",
             Deny(..) => "deny",
+            // log module
+            AccessLog(..) => "access_log",
         }
     }
 
@@ -508,6 +529,8 @@ impl Item {
             // access
             Allow(..) => None,
             Deny(..) => None,
+            // log module
+            AccessLog(..) => None,
         }
     }
 
@@ -582,6 +605,8 @@ impl Item {
             // access
             Allow(..) => None,
             Deny(..) => None,
+            // log module
+            AccessLog(..) => None,
         }
     }
 
@@ -721,6 +746,12 @@ impl Item {
             // access
             Allow(..) => {},
             Deny(..) => {},
+            // log module
+            AccessLog(::ast::AccessLog::Off) => {},
+            AccessLog(::ast::AccessLog::On(ref mut lg)) => {
+                f(&mut lg.path);
+                lg.condition.as_mut().map(f);
+            },
         }
     }
 }

@@ -16,6 +16,7 @@ use gzip;
 use headers;
 use proxy;
 use rewrite;
+use log;
 
 
 pub enum Code {
@@ -325,6 +326,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(gzip::directives),
         core::directives(),
         access::directives(),
+        log::directives(),
         parser(openresty),
         // it's own module
         ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
