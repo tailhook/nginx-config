@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use combine::{many, parser, Parser};
+use combine::{many, many1, parser, Parser};
 use combine::{choice, optional};
 use combine::error::StreamError;
 use combine::easy::Error;
 
 use ast::{self, Item};
-use grammar::{value, bool, Code};
+use grammar::{value, bool, block, Code};
 use helpers::{semi, ident, string, prefix};
 use tokenizer::{TokenStream, Token};
 use value::Value;
@@ -156,12 +156,24 @@ fn listen<'a>()
     .map(Item::Listen)
 }
 
+fn limit_except<'a>()
+    -> impl Parser<Output=Item, Input=TokenStream<'a>>
+{
+    ident("limit_except")
+    .with(many1(string().map(|x| x.value.to_string())))
+    .and(parser(block))
+    .map(|(methods, (position, directives))| {
+        Item::LimitExcept(ast::LimitExcept { methods, position, directives })
+    })
+}
+
 pub fn directives<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
     choice((
         error_page(),
         listen(),
+        limit_except(),
         ident("root").with(parser(value)).skip(semi()).map(Item::Root),
         ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
         ident("default_type").with(parser(value)).skip(semi())

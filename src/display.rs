@@ -82,6 +82,12 @@ impl Displayable for ast::Item {
                     format_args!("location {}", pattern),
                     &directives);
             }
+            LimitExcept(ast::LimitExcept { ref methods, ref directives, .. })
+            => {
+                simple_block(f,
+                    format_args!("limit_except {}", methods.join(" ")),
+                    &directives);
+            }
             Listen(ref lst) => {
                 f.indent();
                 lst.display(f);

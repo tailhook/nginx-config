@@ -305,6 +305,13 @@ pub struct AccessLogOptions {
     pub condition: Option<Value>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LimitExcept {
+    pub position: (Pos, Pos),
+    pub methods: Vec<String>,
+    pub directives: Vec<Directive>,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -354,6 +361,7 @@ pub enum Item {
     Include(Value),
     EmptyGif,
     Internal,
+    LimitExcept(LimitExcept),
     Etag(bool),
     RecursiveErrorPages(bool),
     ChunkedTransferEncoding(bool),
@@ -391,6 +399,7 @@ impl Item {
             Http(..) => "http",
             Server(..) => "server",
             Location(..) => "location",
+            LimitExcept(..) => "limit_except",
             Listen(..) => "listen",
             ProxyPass(..) => "proxy_pass",
             ProxySetHeader {..} => "proxy_set_header",
@@ -467,6 +476,7 @@ impl Item {
             Http(ref h) => Some(&h.directives[..]),
             Server(ref s) => Some(&s.directives[..]),
             Location(ref l) => Some(&l.directives[..]),
+            LimitExcept(ref l) => Some(&l.directives[..]),
             Listen(_) => None,
             ProxyPass(_) => None,
             ProxyPassRequestHeaders(..) => None,
@@ -543,6 +553,7 @@ impl Item {
             Http(ref mut h) => Some(&mut h.directives),
             Server(ref mut s) => Some(&mut s.directives),
             Location(ref mut l) => Some(&mut l.directives),
+            LimitExcept(ref mut l) => Some(&mut l.directives),
             Listen(_) => None,
             ProxyPass(_) => None,
             ProxySetHeader {..} => None,
@@ -629,6 +640,7 @@ impl Item {
             Http(_) => {},
             Server(_) => {},
             Location(_) => {},
+            LimitExcept(_) => {},
             Listen(_) => {},
             ProxyPass(ref mut v) => f(v),
             ProxySetHeader { ref mut field, ref mut value } => {
