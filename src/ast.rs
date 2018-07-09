@@ -319,6 +319,18 @@ pub enum RealIpFrom {
     Network(IpAddr, u8),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ErrorLevel {
+    Debug,
+    Info,
+    Notice,
+    Warn,
+    Error,
+    Crit,
+    Alert,
+    Emerg,
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -357,6 +369,7 @@ pub enum Item {
     Alias(Value),
     ErrorPage(ErrorPage),
     DefaultType(Value),
+    ErrorLog { file: Value, level: Option<ErrorLevel>},
     Rewrite(Rewrite),
     Return(Return),
     If(If),
@@ -440,6 +453,7 @@ impl Item {
             Alias(..) => "alias",
             ErrorPage(..) => "error_page",
             DefaultType(..) => "default_type",
+            ErrorLog {..} => "error_log",
             Rewrite(..) => "rewrite",
             Return(..) => "return",
             If(..) => "if",
@@ -521,6 +535,7 @@ impl Item {
             Alias(..) => None,
             ErrorPage(..) => None,
             DefaultType(..) => None,
+            ErrorLog {..} => None,
             Rewrite(..) => None,
             Return(..) => None,
             If(ref val) => Some(&val.directives),
@@ -602,6 +617,7 @@ impl Item {
             Alias(..) => None,
             ErrorPage(..) => None,
             DefaultType(..) => None,
+            ErrorLog {..} => None,
             Rewrite(..) => None,
             Return(..) => None,
             If(ref mut val) => Some(&mut val.directives),
@@ -702,6 +718,7 @@ impl Item {
             Alias(ref mut v) => f(v),
             ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
             DefaultType(ref mut v) => f(v),
+            ErrorLog { ref mut file, .. } => f(file),
             Rewrite(ref mut rw) => f(&mut rw.replacement),
             Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
             Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),

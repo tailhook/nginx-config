@@ -191,5 +191,23 @@ pub fn directives<'a>()
             .and(optional(parser(value)))
             .map(|(timeo, htimeo)| Item::KeepaliveTimeout(timeo, htimeo))
             .skip(semi()),
+        ident("error_log").with(parser(value))
+            .and(optional(string().and_then(|t| {
+                use ast::ErrorLevel::*;
+                match t.value {
+                    "debug" => Ok(Debug),
+                    "info" => Ok(Info),
+                    "notice" => Ok(Notice),
+                    "warn" => Ok(Warn),
+                    "error" => Ok(Error),
+                    "crit" => Ok(Crit),
+                    "alert" => Ok(Alert),
+                    "emerg" => Ok(Emerg),
+                    _ => Err(::combine::easy::Error::unexpected_message(
+                            "invalid log level")),
+                }
+            })))
+            .skip(semi())
+            .map(|(file, level)| Item::ErrorLog { file, level })
     ))
 }

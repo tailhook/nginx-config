@@ -559,6 +559,27 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            ErrorLog { ref file, level } => {
+                f.indent();
+                f.write(self.directive_name());
+                f.write(" ");
+                file.display(f);
+                if let Some(level) = level {
+                    use ast::ErrorLevel::*;
+                    f.write(" ");
+                    f.write(match level {
+                        Debug => "debug",
+                        Info => "info",
+                        Notice => "notice",
+                        Warn => "warn",
+                        Error => "error",
+                        Crit => "crit",
+                        Alert => "alert",
+                        Emerg => "emerg",
+                    });
+                }
+                f.end();
+            }
         }
     }
 }
