@@ -35,6 +35,7 @@ mod headers;
 mod proxy;
 mod rewrite;
 mod log;
+mod real_ip;
 
 pub use grammar::{parse_main, parse_directives};
 pub use format::Style;

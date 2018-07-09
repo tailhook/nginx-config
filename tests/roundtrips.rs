@@ -52,5 +52,6 @@ fn roundtrip(filename: &str) {
 #[test] fn default_type() { roundtrip("default_type"); }
 #[test] fn access_log() { roundtrip("access_log"); }
 #[test] fn limit_except() { roundtrip("limit_except"); }
+#[test] fn real_ip() { roundtrip("real_ip"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }

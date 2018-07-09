@@ -312,6 +312,13 @@ pub struct LimitExcept {
     pub directives: Vec<Directive>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RealIpFrom {
+    Unix,
+    Ip(IpAddr),
+    Network(IpAddr, u8),
+}
+
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -386,6 +393,10 @@ pub enum Item {
     Deny(Source),
     // log module
     AccessLog(AccessLog),
+    // real_ip module
+    RealIpHeader(Value),
+    RealIpRecursive(bool),
+    SetRealIpFrom(RealIpFrom),
 }
 
 impl Item {
@@ -464,6 +475,10 @@ impl Item {
             Deny(..) => "deny",
             // log module
             AccessLog(..) => "access_log",
+            // real_ip module
+            RealIpHeader(..) => "real_ip_header",
+            RealIpRecursive(..) => "real_ip_recursive",
+            SetRealIpFrom(..) => "set_real_ip_from",
         }
     }
 
@@ -541,6 +556,10 @@ impl Item {
             Deny(..) => None,
             // log module
             AccessLog(..) => None,
+            // real_ip module
+            RealIpHeader(..) => None,
+            RealIpRecursive(..) => None,
+            SetRealIpFrom(..) => None,
         }
     }
 
@@ -618,6 +637,10 @@ impl Item {
             Deny(..) => None,
             // log module
             AccessLog(..) => None,
+            // real_ip module
+            RealIpHeader(..) => None,
+            RealIpRecursive(..) => None,
+            SetRealIpFrom(..) => None,
         }
     }
 
@@ -764,6 +787,10 @@ impl Item {
                 f(&mut lg.path);
                 lg.condition.as_mut().map(f);
             },
+            // real_ip module
+            RealIpHeader(ref mut v) => f(v),
+            RealIpRecursive(..) => {},
+            SetRealIpFrom(..) => {},
         }
     }
 }

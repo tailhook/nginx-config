@@ -17,6 +17,7 @@ use headers;
 use proxy;
 use rewrite;
 use log;
+use real_ip;
 
 
 pub enum Code {
@@ -327,6 +328,7 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         core::directives(),
         access::directives(),
         log::directives(),
+        real_ip::directives(),
         parser(openresty),
         // it's own module
         ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),

@@ -53,6 +53,7 @@ impl Displayable for ast::Item {
             | Etag(opt)
             | RecursiveErrorPages(opt)
             | ChunkedTransferEncoding(opt)
+            | RealIpRecursive(opt)
             => {
                 f.indent();
                 f.write(self.directive_name());
@@ -257,6 +258,7 @@ impl Displayable for ast::Item {
             | ProxyNextUpstreamTries(ref val)
             | ProxyNextUpstreamTimeout(ref val)
             | ServerTokens(ref val)
+            | RealIpHeader(ref val)
             => {
                 one_arg_dir(self.directive_name(), val, f);
             }
@@ -538,6 +540,22 @@ impl Displayable for ast::Item {
                 if let Some(ref condition) = lg.condition {
                     f.write(" if=");
                     condition.display(f);
+                }
+                f.end();
+            }
+            SetRealIpFrom(ref source) => {
+                use ast::RealIpFrom::*;
+                f.indent();
+                f.write(self.directive_name());
+                f.write(" ");
+                match source {
+                    Unix => f.write("unix:"),
+                    Ip(ip) => f.fmt(ip),
+                    Network(ip, bits) => {
+                        f.fmt(ip);
+                        f.write("/");
+                        f.fmt(bits);
+                    }
                 }
                 f.end();
             }
