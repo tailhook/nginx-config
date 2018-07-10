@@ -196,7 +196,7 @@ impl Value {
                 Literal(ref x) => {
                     for c in x.chars() {
                         match c {
-                            ' ' | ';' | '\r' | '\n' | '\t' => {
+                            ' ' | ';' | '\r' | '\n' | '\t' | '{' | '}' => {
                                 return true;
                             }
                             _ => {}
