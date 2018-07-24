@@ -580,6 +580,15 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
+            Index(ref items) => {
+                f.indent();
+                f.write("index");
+                for item in items {
+                    f.write(" ");
+                    item.display(f);
+                }
+                f.end();
+            }
         }
     }
 }

@@ -410,6 +410,8 @@ pub enum Item {
     RealIpHeader(Value),
     RealIpRecursive(bool),
     SetRealIpFrom(RealIpFrom),
+    // index module
+    Index(Vec<Value>),
 }
 
 impl Item {
@@ -493,6 +495,8 @@ impl Item {
             RealIpHeader(..) => "real_ip_header",
             RealIpRecursive(..) => "real_ip_recursive",
             SetRealIpFrom(..) => "set_real_ip_from",
+            // index module
+            Index(..) => "index",
         }
     }
 
@@ -575,6 +579,8 @@ impl Item {
             RealIpHeader(..) => None,
             RealIpRecursive(..) => None,
             SetRealIpFrom(..) => None,
+            // index module
+            Index(..) => None,
         }
     }
 
@@ -657,6 +663,8 @@ impl Item {
             RealIpHeader(..) => None,
             RealIpRecursive(..) => None,
             SetRealIpFrom(..) => None,
+            // index module
+            Index(..) => None,
         }
     }
 
@@ -808,6 +816,12 @@ impl Item {
             RealIpHeader(ref mut v) => f(v),
             RealIpRecursive(..) => {},
             SetRealIpFrom(..) => {},
+            // index module
+            Index(ref mut items) => {
+                for v in items {
+                    f(v);
+                }
+            }
         }
     }
 }

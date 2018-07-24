@@ -332,6 +332,8 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         parser(openresty),
         // it's own module
         ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
+        ident("index").with(many(parser(value))).skip(semi())
+            .map(Item::Index),
     )))
     .map(|(pos, dir)| Directive {
         position: pos,
