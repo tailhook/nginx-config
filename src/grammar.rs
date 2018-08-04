@@ -172,7 +172,7 @@ pub fn block<'a>(input: &mut TokenStream<'a>)
     (
         position(),
         kind(BlockStart)
-            .with(many(parser(directive)))
+            .with(many(directive()))
             .skip(kind(BlockEnd)),
         position(),
     )
@@ -294,8 +294,8 @@ pub fn openresty<'a>(input: &mut TokenStream<'a>)
     .parse_stream(input)
 }
 
-pub fn directive<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Directive, TokenStream<'a>>
+pub fn directive<'a>()
+    -> impl Parser<Output=Directive, Input=TokenStream<'a>>
 {
     position()
     .and(choice((
@@ -339,7 +339,6 @@ pub fn directive<'a>(input: &mut TokenStream<'a>)
         position: pos,
         item: dir,
     })
-    .parse_stream(input)
 }
 
 
@@ -357,7 +356,7 @@ pub fn parse_main(s: &str) -> Result<Main, ParseError> {
 /// This implies no validation of what context directives belong to.
 pub fn parse_directives(s: &str) -> Result<Vec<Directive>, ParseError> {
     let mut tokens = TokenStream::new(s);
-    let (doc, _) = many1(parser(directive))
+    let (doc, _) = many1(directive())
         .skip(eof())
         .parse_stream(&mut tokens)
         .map_err(|e| e.into_inner().error)?;
