@@ -1,4 +1,4 @@
-use combine::{many, parser, Parser};
+use combine::{many, Parser};
 use combine::{choice, optional, position};
 use combine::error::StreamError;
 use combine::easy::Error;
@@ -23,7 +23,7 @@ fn access_log<'a>()
     ident("access_log")
     .with(choice((
         ident("off").map(|_| ast::AccessLog::Off),
-        parser(value).and(optional(
+        value().and(optional(
             string()
             .and(many::<Vec<_>, _>(
                 (position(), string()).and_then(|(pos, s)| {

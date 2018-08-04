@@ -229,7 +229,7 @@ impl<'a> TokenStream<'a> {
 
 impl<'a> fmt::Display for Token<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}[{:?}]", self.value, self.kind)
+        write!(f, "{}", self.value)
     }
 }
 

@@ -1,4 +1,4 @@
-use combine::{parser, Parser};
+use combine::{Parser};
 use combine::{choice, optional, many1, position};
 use combine::error::StreamError;
 use combine::easy::Error;
@@ -19,7 +19,7 @@ fn rewrite<'a>()
 
     ident("rewrite")
     .with(string())
-    .and(parser(value))
+    .and(value())
     .and(optional(choice((
         ident("last").map(|_| Last),
         ident("break").map(|_| Break),
@@ -50,7 +50,7 @@ fn set<'a>()
             Err(Error::unexpected_message("invalid variable"))
         }
     }))
-    .and(parser(value))
+    .and(value())
     .skip(semi())
     .map(|(variable, value)| Item::Set { variable, value })
 }
@@ -78,7 +78,7 @@ fn return_directive<'a>()
     }
 
     ident("return")
-    .with(parser(value).and(optional(parser(value))))
+    .with(value().and(optional(value())))
     .and_then(|(a, b)| -> Result<_, Error<_, _>> {
         if let Some(target) = b {
             match Code::parse(lit(&a)?)? {
@@ -224,7 +224,7 @@ fn if_directive<'a>()
             parse_unary(v, pos)
         }
     })
-    .and(parser(block))
+    .and(block())
     .map(|(condition, (position, directives))| {
         ast::If { position, condition, directives }
     })

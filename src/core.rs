@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use combine::{many, many1, parser, Parser};
+use combine::{many, many1, Parser};
 use combine::{choice, optional};
 use combine::error::StreamError;
 use combine::easy::Error;
@@ -41,7 +41,7 @@ fn error_page<'a>()
     };
 
     ident("error_page")
-    .with(many(parser(value)))
+    .with(many(value()))
     .and_then(move |mut v: Vec<_>| {
         if v.is_empty() {
             return Err(Error::unexpected_message(
@@ -161,7 +161,7 @@ fn limit_except<'a>()
 {
     ident("limit_except")
     .with(many1(string().map(|x| x.value.to_string())))
-    .and(parser(block))
+    .and(block())
     .map(|(methods, (position, directives))| {
         Item::LimitExcept(ast::LimitExcept { methods, position, directives })
     })
@@ -174,24 +174,24 @@ pub fn directives<'a>()
         error_page(),
         listen(),
         limit_except(),
-        ident("root").with(parser(value)).skip(semi()).map(Item::Root),
-        ident("alias").with(parser(value)).skip(semi()).map(Item::Alias),
-        ident("default_type").with(parser(value)).skip(semi())
+        ident("root").with(value()).skip(semi()).map(Item::Root),
+        ident("alias").with(value()).skip(semi()).map(Item::Alias),
+        ident("default_type").with(value()).skip(semi())
             .map(Item::DefaultType),
         ident("internal").skip(semi()).map(|_| Item::Internal),
-        ident("etag").with(parser(bool)).skip(semi()).map(Item::Etag),
-        ident("server_tokens").with(parser(value)).skip(semi())
+        ident("etag").with(bool()).skip(semi()).map(Item::Etag),
+        ident("server_tokens").with(value()).skip(semi())
             .map(Item::ServerTokens),
-        ident("recursive_error_pages").with(parser(bool)).skip(semi())
+        ident("recursive_error_pages").with(bool()).skip(semi())
             .map(Item::RecursiveErrorPages),
-        ident("chunked_transfer_encoding").with(parser(bool)).skip(semi())
+        ident("chunked_transfer_encoding").with(bool()).skip(semi())
             .map(Item::ChunkedTransferEncoding),
         ident("keepalive_timeout")
-            .with(parser(value))
-            .and(optional(parser(value)))
+            .with(value())
+            .and(optional(value()))
             .map(|(timeo, htimeo)| Item::KeepaliveTimeout(timeo, htimeo))
             .skip(semi()),
-        ident("error_log").with(parser(value))
+        ident("error_log").with(value())
             .and(optional(string().and_then(|t| {
                 use ast::ErrorLevel::*;
                 match t.value {

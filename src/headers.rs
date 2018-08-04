@@ -1,4 +1,4 @@
-use combine::{parser, Parser, optional};
+use combine::{Parser, optional};
 use combine::{choice};
 
 use ast::{self, Item};
@@ -11,8 +11,8 @@ fn add_header<'a>()
 {
     ident("add_header")
     .with((
-        parser(value),
-        parser(value),
+        value(),
+        value(),
         optional(ident("always").map(|_| ())),
     )).map(|(field, value, always)| {
         ast::AddHeader { field, value, always: always.is_some() }
@@ -26,7 +26,7 @@ fn expires<'a>()
 {
     ident("expires")
     .with(optional(ident("modified"))).map(|x| x.is_some())
-    .and(parser(value))
+    .and(value())
     .map(|(modified, value)| {
         Item::Expires(ast::Expires { modified, value })
     }).skip(semi())

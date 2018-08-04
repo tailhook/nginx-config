@@ -53,6 +53,7 @@ impl<'a> From<InternalError<'a>> for ParseError {
             }
             error_buf.push(convert(item));
         }
+        println!("Unexpected {:?}, expected {:?}", unexpected, expected_buf);
         if let Some(unexpected) = unexpected {
             if expected_buf.len() > 3 {
                 let mut close = Vec::new();

@@ -1,5 +1,6 @@
-use combine::{eof, many, many1, ParseResult, parser, Parser};
+use combine::{eof, many, many1, Parser};
 use combine::{choice, position};
+use combine::combinator::{opaque, no_partial, FnOpaque};
 use combine::error::StreamError;
 use combine::easy::Error;
 
@@ -25,26 +26,20 @@ pub enum Code {
     Normal(u32),
 }
 
-pub fn bool<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<bool, TokenStream<'a>>
-{
+pub fn bool<'a>() -> impl Parser<Output=bool, Input=TokenStream<'a>> {
     choice((
         ident("on").map(|_| true),
         ident("off").map(|_| false),
     ))
-    .parse_stream(input)
 }
 
-pub fn value<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Value, TokenStream<'a>>
-{
+pub fn value<'a>() -> impl Parser<Output=Value, Input=TokenStream<'a>> {
     (position(), string())
     .and_then(|(p, v)| Value::parse(p, v))
-    .parse_stream(input)
 }
 
-pub fn worker_processes<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
+pub fn worker_processes<'a>()
+    -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
     use ast::WorkerProcesses;
     ident("worker_processes")
@@ -54,12 +49,9 @@ pub fn worker_processes<'a>(input: &mut TokenStream<'a>)
     )))
     .skip(semi())
     .map(Item::WorkerProcesses)
-    .parse_stream(input)
 }
 
-pub fn server_name<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn server_name<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use ast::ServerName::*;
     ident("server_name")
     .with(many1(
@@ -79,13 +71,10 @@ pub fn server_name<'a>(input: &mut TokenStream<'a>)
     ))
     .skip(semi())
     .map(Item::ServerName)
-    .parse_stream(input)
 }
 
 
-pub fn map<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn map<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use tokenizer::Kind::{BlockStart, BlockEnd};
     use helpers::kind;
     enum Tok {
@@ -96,7 +85,7 @@ pub fn map<'a>(input: &mut TokenStream<'a>)
         Include(String),
     }
     ident("map")
-    .with(parser(value))
+    .with(value())
     .and(string().and_then(|t| {
         let ch1 = t.value.chars().nth(0).unwrap_or(' ');
         let ch2 = t.value.chars().nth(1).unwrap_or(' ');
@@ -113,9 +102,9 @@ pub fn map<'a>(input: &mut TokenStream<'a>)
     .and(many(choice((
         ident("hostnames").map(|_| Tok::Hostnames),
         ident("volatile").map(|_| Tok::Volatile),
-        ident("default").with(parser(value)).map(|v| Tok::Default(v)),
-        ident("include").with(parser(raw)).map(|v| Tok::Include(v)),
-        parser(raw).and(parser(value)).map(|(s, v)| Tok::Pattern(s, v)),
+        ident("default").with(value()).map(|v| Tok::Default(v)),
+        ident("include").with(raw()).map(|v| Tok::Include(v)),
+        raw().and(value()).map(|(s, v)| Tok::Pattern(s, v)),
     )).skip(semi())))
     .skip(kind(BlockEnd))
     .map(|((expression, variable), vec): ((_, _), Vec<Tok>)| {
@@ -161,55 +150,49 @@ pub fn map<'a>(input: &mut TokenStream<'a>)
         }
         Item::Map(res)
     })
-    .parse_stream(input)
 }
 
-pub fn block<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<((Pos, Pos), Vec<Directive>), TokenStream<'a>>
+pub fn block<'a>()
+    -> FnOpaque<TokenStream<'a>, ((Pos, Pos), Vec<Directive>)>
 {
     use tokenizer::Kind::{BlockStart, BlockEnd};
     use helpers::kind;
-    (
-        position(),
-        kind(BlockStart)
-            .with(many(parser(directive)))
-            .skip(kind(BlockEnd)),
-        position(),
-    )
-    .map(|(s, dirs, e)| ((s, e), dirs))
-    .parse_stream(input)
+    opaque(|f| {
+        f(&mut no_partial((
+                position(),
+                kind(BlockStart)
+                    .with(many(directive()))
+                    .skip(kind(BlockEnd)),
+                position(),
+        ))
+        .map(|(s, dirs, e)| ((s, e), dirs)))
+    })
 }
 
 // A string that forbids variables
-pub fn raw<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<String, TokenStream<'a>>
-{
+pub fn raw<'a>() -> impl Parser<Output=String, Input=TokenStream<'a>> {
     // TODO(tailhook) unquote single and double quotes
     // error on variables?
     string().and_then(|t| Ok::<_, Error<_, _>>(t.value.to_string()))
-    .parse_stream(input)
 }
 
-pub fn location<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn location<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use ast::LocationPattern::*;
     ident("location").with(choice((
-        text("=").with(parser(raw).map(Exact)),
-        text("^~").with(parser(raw).map(FinalPrefix)),
-        text("~").with(parser(raw).map(Regex)),
-        text("~*").with(parser(raw).map(RegexInsensitive)),
-        parser(raw)
+        text("=").with(raw().map(Exact)),
+        text("^~").with(raw().map(FinalPrefix)),
+        text("~").with(raw().map(Regex)),
+        text("~*").with(raw().map(RegexInsensitive)),
+        raw()
             .map(|v| if v.starts_with('*') {
                 Named(v)
             } else {
                 Prefix(v)
             }),
-    ))).and(parser(block))
+    ))).and(block())
     .map(|(pattern, (position, directives))| {
         Item::Location(ast::Location { pattern, position, directives })
     })
-    .parse_stream(input)
 }
 
 impl Code {
@@ -233,15 +216,13 @@ impl Code {
 }
 
 
-pub fn try_files<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn try_files<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use ast::TryFilesLastOption::*;
     use ast::Item::TryFiles;
     use value::Item::*;
 
     ident("try_files")
-    .with(many1(parser(value)))
+    .with(many1(value()))
     .skip(semi())
     .and_then(|mut v: Vec<_>| -> Result<_, Error<_, _>> {
         let last = v.pop().unwrap();
@@ -259,87 +240,81 @@ pub fn try_files<'a>(input: &mut TokenStream<'a>)
             last_option: last,
         }))
     })
-    .parse_stream(input)
 }
 
 
-pub fn openresty<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn openresty<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use ast::Item::*;
     choice((
-        ident("rewrite_by_lua_file").with(parser(value)).skip(semi())
+        ident("rewrite_by_lua_file").with(value()).skip(semi())
             .map(Item::RewriteByLuaFile),
-        ident("balancer_by_lua_file").with(parser(value)).skip(semi())
+        ident("balancer_by_lua_file").with(value()).skip(semi())
             .map(BalancerByLuaFile),
-        ident("access_by_lua_file").with(parser(value)).skip(semi())
+        ident("access_by_lua_file").with(value()).skip(semi())
             .map(AccessByLuaFile),
-        ident("header_filter_by_lua_file").with(parser(value)).skip(semi())
+        ident("header_filter_by_lua_file").with(value()).skip(semi())
             .map(HeaderFilterByLuaFile),
-        ident("content_by_lua_file").with(parser(value)).skip(semi())
+        ident("content_by_lua_file").with(value()).skip(semi())
             .map(ContentByLuaFile),
-        ident("body_filter_by_lua_file").with(parser(value)).skip(semi())
+        ident("body_filter_by_lua_file").with(value()).skip(semi())
             .map(BodyFilterByLuaFile),
-        ident("log_by_lua_file").with(parser(value)).skip(semi())
+        ident("log_by_lua_file").with(value()).skip(semi())
             .map(LogByLuaFile),
-        ident("lua_need_request_body").with(parser(value)).skip(semi())
+        ident("lua_need_request_body").with(value()).skip(semi())
             .map(LuaNeedRequestBody),
-        ident("ssl_certificate_by_lua_file").with(parser(value)).skip(semi())
+        ident("ssl_certificate_by_lua_file").with(value()).skip(semi())
             .map(SslCertificateByLuaFile),
-        ident("ssl_session_fetch_by_lua_file").with(parser(value)).skip(semi())
+        ident("ssl_session_fetch_by_lua_file").with(value()).skip(semi())
             .map(SslSessionFetchByLuaFile),
-        ident("ssl_session_store_by_lua_file").with(parser(value)).skip(semi())
+        ident("ssl_session_store_by_lua_file").with(value()).skip(semi())
             .map(SslSessionStoreByLuaFile),
     ))
-    .parse_stream(input)
 }
 
-pub fn directive<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Directive, TokenStream<'a>>
+pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
 {
     position()
     .and(choice((
-        ident("daemon").with(parser(bool)).skip(semi())
+        ident("daemon").with(bool()).skip(semi())
             .map(Item::Daemon),
-        ident("master_process").with(parser(bool)).skip(semi())
+        ident("master_process").with(bool()).skip(semi())
             .map(Item::MasterProcess),
-        parser(worker_processes),
-        ident("http").with(parser(block))
+        worker_processes(),
+        ident("http").with(block())
             .map(|(position, directives)| ast::Http { position, directives })
             .map(Item::Http),
-        ident("server").with(parser(block))
+        ident("server").with(block())
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
         rewrite::directives(),
-        parser(try_files),
-        ident("include").with(parser(value)).skip(semi()).map(Item::Include),
-        ident("ssl_certificate").with(parser(value)).skip(semi())
+        try_files(),
+        ident("include").with(value()).skip(semi()).map(Item::Include),
+        ident("ssl_certificate").with(value()).skip(semi())
             .map(Item::SslCertificate),
-        ident("ssl_certificate_key").with(parser(value)).skip(semi())
+        ident("ssl_certificate_key").with(value()).skip(semi())
             .map(Item::SslCertificateKey),
-        parser(location),
+        location(),
         headers::directives(),
-        parser(server_name),
-        parser(map),
-        ident("client_max_body_size").with(parser(value)).skip(semi())
+        server_name(),
+        map(),
+        ident("client_max_body_size").with(value()).skip(semi())
             .map(Item::ClientMaxBodySize),
-        parser(proxy::directives),
-        parser(gzip::directives),
+        proxy::directives(),
+        gzip::directives(),
         core::directives(),
         access::directives(),
         log::directives(),
         real_ip::directives(),
-        parser(openresty),
+        openresty(),
         // it's own module
         ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
-        ident("index").with(many(parser(value))).skip(semi())
+        ident("index").with(many(value())).skip(semi())
             .map(Item::Index),
     )))
     .map(|(pos, dir)| Directive {
         position: pos,
         item: dir,
     })
-    .parse_stream(input)
 }
 
 
@@ -357,7 +332,7 @@ pub fn parse_main(s: &str) -> Result<Main, ParseError> {
 /// This implies no validation of what context directives belong to.
 pub fn parse_directives(s: &str) -> Result<Vec<Directive>, ParseError> {
     let mut tokens = TokenStream::new(s);
-    let (doc, _) = many1(parser(directive))
+    let (doc, _) = many1(directive())
         .skip(eof())
         .parse_stream(&mut tokens)
         .map_err(|e| e.into_inner().error)?;

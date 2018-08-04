@@ -1,4 +1,4 @@
-use combine::{many1, ParseResult, parser, Parser};
+use combine::{many1, Parser};
 use combine::{choice};
 
 use ast::{Item};
@@ -6,9 +6,7 @@ use grammar::bool;
 use helpers::{semi, ident};
 use tokenizer::TokenStream;
 
-pub fn gzip_static<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn gzip_static<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use ast::GzipStatic::*;
     ident("gzip_static").with(choice((
         ident("on").map(|_| On),
@@ -17,12 +15,9 @@ pub fn gzip_static<'a>(input: &mut TokenStream<'a>)
     )))
     .map(Item::GzipStatic)
     .skip(semi())
-    .parse_stream(input)
 }
 
-pub fn gzip_proxied<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn gzip_proxied<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     use ast::GzipProxied::*;
     ident("gzip_proxied").with(many1(choice((
         ident("off").map(|_| Off),
@@ -37,16 +32,13 @@ pub fn gzip_proxied<'a>(input: &mut TokenStream<'a>)
     ))))
     .map(Item::GzipProxied)
     .skip(semi())
-    .parse_stream(input)
 }
 
-pub fn directives<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn directives<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     choice((
-        ident("gzip").with(parser(bool)).skip(semi())
+        ident("gzip").with(bool()).skip(semi())
             .map(Item::Gzip),
-        parser(gzip_static),
-        parser(gzip_proxied),
-    )).parse_stream(input)
+        gzip_static(),
+        gzip_proxied(),
+    ))
 }

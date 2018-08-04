@@ -1,4 +1,4 @@
-use combine::{ParseResult, parser, Parser};
+use combine::{Parser};
 use combine::{choice, many1};
 use combine::error::StreamError;
 use combine::easy::Error;
@@ -9,23 +9,21 @@ use tokenizer::TokenStream;
 use grammar::{value, bool, Code};
 
 
-pub fn directives<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Item, TokenStream<'a>>
-{
+pub fn directives<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     choice((
-        ident("proxy_pass").with(parser(value)).skip(semi())
+        ident("proxy_pass").with(value()).skip(semi())
             .map(Item::ProxyPass),
-        ident("proxy_set_header").with(parser(value)).and(parser(value))
+        ident("proxy_set_header").with(value()).and(value())
             .skip(semi())
             .map(|(field, value)| Item::ProxySetHeader { field, value }),
-        ident("proxy_method").with(parser(value)).skip(semi())
+        ident("proxy_method").with(value()).skip(semi())
             .map(Item::ProxyMethod),
-        ident("proxy_cache").with(parser(value)).skip(semi())
+        ident("proxy_cache").with(value()).skip(semi())
             .map(Item::ProxyCache),
-        ident("proxy_cache_key").with(parser(value)).skip(semi())
+        ident("proxy_cache_key").with(value()).skip(semi())
             .map(Item::ProxyCacheKey),
         ident("proxy_cache_valid")
-            .with(many1(parser(value)))
+            .with(many1(value()))
             .and_then(|mut v: Vec<_>| {
                 use ast::ProxyCacheValid::*;
                 use value::Item::*;
@@ -67,21 +65,21 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
                 return Ok(Specific(codes, time));
             })
             .skip(semi()).map(Item::ProxyCacheValid),
-        ident("proxy_read_timeout").with(parser(value)).skip(semi())
+        ident("proxy_read_timeout").with(value()).skip(semi())
             .map(Item::ProxyReadTimeout),
-        ident("proxy_connect_timeout").with(parser(value)).skip(semi())
+        ident("proxy_connect_timeout").with(value()).skip(semi())
             .map(Item::ProxyConnectTimeout),
-        ident("proxy_hide_header").with(parser(value)).skip(semi())
+        ident("proxy_hide_header").with(value()).skip(semi())
             .map(Item::ProxyHideHeader),
-        ident("proxy_pass_header").with(parser(value)).skip(semi())
+        ident("proxy_pass_header").with(value()).skip(semi())
             .map(Item::ProxyPassHeader),
-        ident("proxy_pass_request_headers").with(parser(bool)).skip(semi())
+        ident("proxy_pass_request_headers").with(bool()).skip(semi())
             .map(Item::ProxyPassRequestHeaders),
-        ident("proxy_pass_request_body").with(parser(bool)).skip(semi())
+        ident("proxy_pass_request_body").with(bool()).skip(semi())
             .map(Item::ProxyPassRequestBody),
-        ident("proxy_intercept_errors").with(parser(bool)).skip(semi())
+        ident("proxy_intercept_errors").with(bool()).skip(semi())
             .map(Item::ProxyInterceptErrors),
-        ident("proxy_buffering").with(parser(bool)).skip(semi())
+        ident("proxy_buffering").with(bool()).skip(semi())
             .map(Item::ProxyBuffering),
         ident("proxy_ignore_headers").with(many1(string())).skip(semi())
             .map(|v: Vec<_>| {
@@ -121,9 +119,9 @@ pub fn directives<'a>(input: &mut TokenStream<'a>)
             })))
             .skip(semi())
             .map(Item::ProxyNextUpstream),
-        ident("proxy_next_upstream_tries").with(parser(value)).skip(semi())
+        ident("proxy_next_upstream_tries").with(value()).skip(semi())
             .map(Item::ProxyNextUpstreamTries),
-        ident("proxy_next_upstream_timeout").with(parser(value)).skip(semi())
+        ident("proxy_next_upstream_timeout").with(value()).skip(semi())
             .map(Item::ProxyNextUpstreamTimeout),
-    )).parse_stream(input)
+    ))
 }

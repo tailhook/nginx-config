@@ -1,6 +1,6 @@
 use std::net::IpAddr;
 
-use combine::{choice, parser, Parser};
+use combine::{choice, Parser};
 use combine::error::StreamError;
 use combine::easy::Error;
 
@@ -33,9 +33,9 @@ pub fn directives<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
     choice((
-        ident("real_ip_header").with(parser(value))
+        ident("real_ip_header").with(value())
             .skip(semi()).map(Item::RealIpHeader),
-        ident("real_ip_recursive").with(parser(bool))
+        ident("real_ip_recursive").with(bool())
             .skip(semi()).map(Item::RealIpRecursive),
         ident("set_real_ip_from")
             .with(string().and_then(parse_source))
