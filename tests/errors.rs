@@ -24,6 +24,9 @@ fn test_error(filename: &str) {
 }
 
 #[test] fn invalid_directive() { test_error("invalid_directive"); }
+#[test] fn invalid_directive_in_block() {
+    test_error("invalid_directive_in_block");
+}
 #[test] fn invalid_directive_with_newline() {
     test_error("invalid_directive_with_newline");
 }
