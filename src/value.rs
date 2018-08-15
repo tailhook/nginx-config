@@ -1,4 +1,5 @@
 use std::mem;
+use std::str::FromStr;
 
 use combine::easy::Error;
 use combine::error::StreamError;
@@ -15,7 +16,7 @@ use tokenizer::Token;
 /// quotes when parsing
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Value {
-    pub(crate) position: Pos,
+    position: Pos,
     pub(crate) data: Vec<Item>,
 }
 
@@ -188,6 +189,14 @@ impl Value {
     }
 }
 
+impl FromStr for Value {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Value, String> {
+        Value::parse_str(Pos { line: 0, column: 0 }, s)
+        .map_err(|e| e.to_string())
+    }
+}
+
 impl Value {
     fn has_specials(&self) -> bool {
         use self::Item::*;
@@ -280,4 +289,3 @@ impl Displayable for Value {
         }
     }
 }
-
