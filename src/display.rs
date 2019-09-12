@@ -61,6 +61,12 @@ impl Displayable for ast::Item {
                 f.write(if opt { "on" } else { "off" });
                 f.end();
             }
+            WorkerConnections(ast::WorkerConnections::Exact(n)) => {
+                f.indent();
+                f.write("worker_connections ");
+                f.fmt(&n);
+                f.end();
+            }
             WorkerProcesses(ast::WorkerProcesses::Auto) => {
                 f.indent();
                 f.write("worker_processes auto");
@@ -74,6 +80,9 @@ impl Displayable for ast::Item {
             }
             Http(ref h) => {
                 simple_block(f, "http", &h.directives);
+            }
+            Events(ref e) => {
+                simple_block(f, "events", &e.directives);
             }
             Server(ref s) => {
                 simple_block(f, "server", &s.directives);
@@ -230,6 +239,7 @@ impl Displayable for ast::Item {
                 f.end();
             }
             | Root(ref val)
+            | User(ref val)
             | Alias(ref val)
             | DefaultType(ref val)
             | ClientMaxBodySize(ref val)
@@ -578,6 +588,13 @@ impl Displayable for ast::Item {
                         Emerg => "emerg",
                     });
                 }
+                f.end();
+            }
+            Pid{ ref file } => {
+                f.indent();
+                f.write(self.directive_name());
+                f.write(" ");
+                file.display(f);
                 f.end();
             }
             Index(ref items) => {

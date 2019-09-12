@@ -20,7 +20,9 @@ fn roundtrip(filename: &str) {
 #[test] fn worker_processes_auto() { roundtrip("worker_processes_auto"); }
 #[test] fn worker_processes_7() { roundtrip("worker_processes_7"); }
 #[test] fn worker_processes_13() { roundtrip("worker_processes_13"); }
+#[test] fn worker_connections() { roundtrip("worker_connections"); }
 #[test] fn http() { roundtrip("http"); }
+#[test] fn user() { roundtrip("user"); }
 #[test] fn listen() { roundtrip("listen"); }
 #[test] fn proxy() { roundtrip("proxy"); }
 #[test] fn location() { roundtrip("location"); }
@@ -54,6 +56,7 @@ fn roundtrip(filename: &str) {
 #[test] fn limit_except() { roundtrip("limit_except"); }
 #[test] fn real_ip() { roundtrip("real_ip"); }
 #[test] fn error_log() { roundtrip("error_log"); }
+#[test] fn pid() { roundtrip("pid"); }
 #[test] fn index() { roundtrip("index"); }
 // not working yet
 //#[test] fn few_locations() { roundtrip("few_locations"); }
