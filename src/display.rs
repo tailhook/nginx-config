@@ -45,6 +45,8 @@ impl Displayable for ast::Item {
         match *self {
             | Daemon(opt)
             | MasterProcess(opt)
+            | MultiAccept(opt)
+            | SendFile(opt)
             | ProxyPassRequestHeaders(opt)
             | ProxyPassRequestBody(opt)
             | ProxyInterceptErrors(opt)
@@ -240,6 +242,7 @@ impl Displayable for ast::Item {
             }
             | Root(ref val)
             | User(ref val)
+            | Use(ref val)
             | Alias(ref val)
             | DefaultType(ref val)
             | ClientMaxBodySize(ref val)

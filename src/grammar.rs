@@ -43,9 +43,9 @@ pub fn worker_connections<'a>()
 {
     use ast::WorkerConnections;
     ident("worker_connections")
-    .with(choice((
+    .with(
         string().and_then(|s| s.value.parse().map(WorkerConnections::Exact)),
-    )))
+    )
     .skip(semi())
     .map(Item::WorkerConnections)
 }
@@ -283,39 +283,51 @@ pub fn openresty<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     ))
 }
 
-pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
-{
-    position()
-    .and(choice((
+pub fn top_level<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
+    choice((
+        worker_connections(),
+        worker_processes(),
+        ident("include").with(value()).skip(semi()).map(Item::Include),
         ident("daemon").with(bool()).skip(semi())
             .map(Item::Daemon),
         ident("master_process").with(bool()).skip(semi())
             .map(Item::MasterProcess),
+        ident("multi_accept").with(bool()).skip(semi())
+            .map(Item::MultiAccept),
+        ident("sendfile").with(bool()).skip(semi())
+            .map(Item::SendFile),
         ident("user").with(value()).skip(semi()).map(Item::User),
-        worker_processes(),
-        //worker_connections(),
+        ident("use").with(value()).skip(semi()).map(Item::Use),
         ident("http").with(block())
             .map(|(position, directives)| ast::Http { position, directives })
             .map(Item::Http),
-        //ident("events").with(block())
-            //.map(|(position, directives)| ast::Events { position, directives })
-            //.map(Item::Events),
+        ident("events").with(block())
+            .map(|(position, directives)| ast::Events { position, directives })
+            .map(Item::Events),
         ident("server").with(block())
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
-        rewrite::directives(),
-        try_files(),
-        ident("include").with(value()).skip(semi()).map(Item::Include),
+        ident("client_max_body_size").with(value()).skip(semi())
+            .map(Item::ClientMaxBodySize),
+        ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
         ident("ssl_certificate").with(value()).skip(semi())
             .map(Item::SslCertificate),
         ident("ssl_certificate_key").with(value()).skip(semi())
             .map(Item::SslCertificateKey),
+    ))
+}
+
+pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
+{
+    position()
+    .and(choice((
+        top_level(),
+        rewrite::directives(),
+        try_files(),
         location(),
         headers::directives(),
         server_name(),
         map(),
-        ident("client_max_body_size").with(value()).skip(semi())
-            .map(Item::ClientMaxBodySize),
         proxy::directives(),
         gzip::directives(),
         core::directives(),
@@ -324,7 +336,6 @@ pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
         real_ip::directives(),
         openresty(),
         // it's own module
-        ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
         ident("index").with(many(value())).skip(semi())
             .map(Item::Index),
     )))

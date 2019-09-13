@@ -346,8 +346,11 @@ pub enum ErrorLevel {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     User(Value),
+    Use(Value),
     Daemon(bool),
     MasterProcess(bool),
+    MultiAccept(bool),
+    SendFile(bool),
     WorkerProcesses(WorkerProcesses),
     WorkerConnections(WorkerConnections),
     Http(Http),
@@ -435,8 +438,11 @@ impl Item {
         use self::Item::*;
         match *self {
             User(..) => "user",
+            Use(..) => "use",
             Daemon(..) => "daemon",
             MasterProcess(..) => "master_process",
+            MultiAccept(..) => "multi_accept",
+            SendFile(..) => "sendfile",
             WorkerProcesses(..) => "worker_processes",
             WorkerConnections(..) => "worker_connections",
             Http(..) => "http",
@@ -523,8 +529,11 @@ impl Item {
         use self::Item::*;
         match *self {
             User(_) => None,
+            Use(_) => None,
             Daemon(_) => None,
             MasterProcess(_) => None,
+            MultiAccept(_) => None,
+            SendFile(_) => None,
             WorkerProcesses(_) => None,
             WorkerConnections(_) => None,
             Http(ref h) => Some(&h.directives[..]),
@@ -611,8 +620,11 @@ impl Item {
         use self::Item::*;
         match *self {
             User(_) => None,
+            Use(_) => None,
             Daemon(_) => None,
             MasterProcess(_) => None,
+            MultiAccept(_) => None,
+            SendFile(_) => None,
             WorkerProcesses(_) => None,
             WorkerConnections(_) => None,
             Http(ref mut h) => Some(&mut h.directives),
@@ -709,8 +721,11 @@ impl Item {
         use self::Item::*;
         match *self {
             User(_) => {},
+            Use(_) => {},
             Daemon(_) => {},
             MasterProcess(_) => {},
+            MultiAccept(_) => {},
+            SendFile(_) => {},
             WorkerProcesses(_) => {},
             WorkerConnections(_) => {},
             Http(_) => {},

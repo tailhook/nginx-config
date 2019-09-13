@@ -17,12 +17,15 @@ fn roundtrip(filename: &str) {
 
 #[test] fn minimal() { roundtrip("minimal"); }
 #[test] fn master_process() { roundtrip("master_process"); }
+#[test] fn multi_accept() { roundtrip("multi_accept"); }
+#[test] fn sendfile() { roundtrip("send_file"); }
 #[test] fn worker_processes_auto() { roundtrip("worker_processes_auto"); }
 #[test] fn worker_processes_7() { roundtrip("worker_processes_7"); }
 #[test] fn worker_processes_13() { roundtrip("worker_processes_13"); }
 #[test] fn worker_connections() { roundtrip("worker_connections"); }
 #[test] fn http() { roundtrip("http"); }
 #[test] fn user() { roundtrip("user"); }
+#[test] fn r#use() { roundtrip("use"); }
 #[test] fn listen() { roundtrip("listen"); }
 #[test] fn proxy() { roundtrip("proxy"); }
 #[test] fn location() { roundtrip("location"); }
