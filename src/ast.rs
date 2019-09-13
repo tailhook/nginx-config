@@ -27,7 +27,18 @@ pub enum WorkerProcesses {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WorkerConnections {
+    Exact(u32),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Http {
+    pub position: (Pos, Pos),
+    pub directives: Vec<Directive>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Events {
     pub position: (Pos, Pos),
     pub directives: Vec<Directive>,
 }
@@ -334,10 +345,16 @@ pub enum ErrorLevel {
 /// The enum which represents nginx config directive
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
+    User(Value),
+    Use(Value),
     Daemon(bool),
     MasterProcess(bool),
+    MultiAccept(bool),
+    SendFile(bool),
     WorkerProcesses(WorkerProcesses),
+    WorkerConnections(WorkerConnections),
     Http(Http),
+    Events(Events),
     Server(Server),
     Location(Location),
     Listen(Listen),
@@ -370,6 +387,7 @@ pub enum Item {
     ErrorPage(ErrorPage),
     DefaultType(Value),
     ErrorLog { file: Value, level: Option<ErrorLevel>},
+    Pid{ file: Value },
     Rewrite(Rewrite),
     Return(Return),
     If(If),
@@ -419,10 +437,16 @@ impl Item {
     pub fn directive_name(&self) -> &'static str {
         use self::Item::*;
         match *self {
+            User(..) => "user",
+            Use(..) => "use",
             Daemon(..) => "daemon",
             MasterProcess(..) => "master_process",
+            MultiAccept(..) => "multi_accept",
+            SendFile(..) => "sendfile",
             WorkerProcesses(..) => "worker_processes",
+            WorkerConnections(..) => "worker_connections",
             Http(..) => "http",
+            Events(..) => "events",
             Server(..) => "server",
             Location(..) => "location",
             LimitExcept(..) => "limit_except",
@@ -456,6 +480,7 @@ impl Item {
             ErrorPage(..) => "error_page",
             DefaultType(..) => "default_type",
             ErrorLog {..} => "error_log",
+            Pid {..} => "pid",
             Rewrite(..) => "rewrite",
             Return(..) => "return",
             If(..) => "if",
@@ -503,10 +528,16 @@ impl Item {
     pub fn children(&self) -> Option<&[Directive]> {
         use self::Item::*;
         match *self {
+            User(_) => None,
+            Use(_) => None,
             Daemon(_) => None,
             MasterProcess(_) => None,
+            MultiAccept(_) => None,
+            SendFile(_) => None,
             WorkerProcesses(_) => None,
+            WorkerConnections(_) => None,
             Http(ref h) => Some(&h.directives[..]),
+            Events(ref e) => Some(&e.directives[..]),
             Server(ref s) => Some(&s.directives[..]),
             Location(ref l) => Some(&l.directives[..]),
             LimitExcept(ref l) => Some(&l.directives[..]),
@@ -540,6 +571,7 @@ impl Item {
             ErrorPage(..) => None,
             DefaultType(..) => None,
             ErrorLog {..} => None,
+            Pid {..} => None,
             Rewrite(..) => None,
             Return(..) => None,
             If(ref val) => Some(&val.directives),
@@ -587,10 +619,16 @@ impl Item {
     pub fn children_mut(&mut self) -> Option<&mut Vec<Directive>> {
         use self::Item::*;
         match *self {
+            User(_) => None,
+            Use(_) => None,
             Daemon(_) => None,
             MasterProcess(_) => None,
+            MultiAccept(_) => None,
+            SendFile(_) => None,
             WorkerProcesses(_) => None,
+            WorkerConnections(_) => None,
             Http(ref mut h) => Some(&mut h.directives),
+            Events(ref mut e) => Some(&mut e.directives),
             Server(ref mut s) => Some(&mut s.directives),
             Location(ref mut l) => Some(&mut l.directives),
             LimitExcept(ref mut l) => Some(&mut l.directives),
@@ -624,6 +662,7 @@ impl Item {
             ErrorPage(..) => None,
             DefaultType(..) => None,
             ErrorLog {..} => None,
+            Pid {..} => None,
             Rewrite(..) => None,
             Return(..) => None,
             If(ref mut val) => Some(&mut val.directives),
@@ -681,10 +720,16 @@ impl Item {
     {
         use self::Item::*;
         match *self {
+            User(_) => {},
+            Use(_) => {},
             Daemon(_) => {},
             MasterProcess(_) => {},
+            MultiAccept(_) => {},
+            SendFile(_) => {},
             WorkerProcesses(_) => {},
+            WorkerConnections(_) => {},
             Http(_) => {},
+            Events(_) => {},
             Server(_) => {},
             Location(_) => {},
             LimitExcept(_) => {},
@@ -727,6 +772,7 @@ impl Item {
             ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
             DefaultType(ref mut v) => f(v),
             ErrorLog { ref mut file, .. } => f(file),
+            Pid { ref mut file, .. } => f(file),
             Rewrite(ref mut rw) => f(&mut rw.replacement),
             Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
             Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),

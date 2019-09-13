@@ -191,6 +191,9 @@ pub fn directives<'a>()
             .and(optional(value()))
             .map(|(timeo, htimeo)| Item::KeepaliveTimeout(timeo, htimeo))
             .skip(semi()),
+        ident("pid").with(value())
+            .skip(semi())
+            .map(|file| Item::Pid { file }),
         ident("error_log").with(value())
             .and(optional(string().and_then(|t| {
                 use ast::ErrorLevel::*;

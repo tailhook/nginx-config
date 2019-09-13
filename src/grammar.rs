@@ -38,6 +38,18 @@ pub fn value<'a>() -> impl Parser<Output=Value, Input=TokenStream<'a>> {
     .and_then(|(p, v)| Value::parse(p, v))
 }
 
+pub fn worker_connections<'a>() 
+    -> impl Parser<Output=Item, Input=TokenStream<'a>> 
+{
+    use ast::WorkerConnections;
+    ident("worker_connections")
+    .with(
+        string().and_then(|s| s.value.parse().map(WorkerConnections::Exact)),
+    )
+    .skip(semi())
+    .map(Item::WorkerConnections)
+}
+
 pub fn worker_processes<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
@@ -89,9 +101,9 @@ pub fn map<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     .and(string().and_then(|t| {
         let ch1 = t.value.chars().nth(0).unwrap_or(' ');
         let ch2 = t.value.chars().nth(1).unwrap_or(' ');
-        if ch1 == '$' && matches!(ch2, 'a'...'z' | 'A'...'Z' | '_') &&
+        if ch1 == '$' && matches!(ch2, 'a'..='z' | 'A'..='Z' | '_') &&
             t.value[2..].chars()
-            .all(|x| matches!(x, 'a'...'z' | 'A'...'Z' | '0'...'9' | '_'))
+            .all(|x| matches!(x, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_'))
         {
             Ok(t.value[1..].to_string())
         } else {
@@ -202,7 +214,7 @@ impl Code {
         let code = code_str.parse::<u32>()?;
         match code {
             301 | 302 | 303 | 307 | 308 => Ok(Code::Redirect(code)),
-            200...599 => Ok(Code::Normal(code)),
+            200..=599 => Ok(Code::Normal(code)),
             _ => return Err(Error::unexpected_message(
                 format!("invalid response code {}", code))),
         }
@@ -271,34 +283,51 @@ pub fn openresty<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     ))
 }
 
-pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
-{
-    position()
-    .and(choice((
+pub fn top_level<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
+    choice((
+        worker_connections(),
+        worker_processes(),
+        ident("include").with(value()).skip(semi()).map(Item::Include),
         ident("daemon").with(bool()).skip(semi())
             .map(Item::Daemon),
         ident("master_process").with(bool()).skip(semi())
             .map(Item::MasterProcess),
-        worker_processes(),
+        ident("multi_accept").with(bool()).skip(semi())
+            .map(Item::MultiAccept),
+        ident("sendfile").with(bool()).skip(semi())
+            .map(Item::SendFile),
+        ident("user").with(value()).skip(semi()).map(Item::User),
+        ident("use").with(value()).skip(semi()).map(Item::Use),
         ident("http").with(block())
             .map(|(position, directives)| ast::Http { position, directives })
             .map(Item::Http),
+        ident("events").with(block())
+            .map(|(position, directives)| ast::Events { position, directives })
+            .map(Item::Events),
         ident("server").with(block())
             .map(|(position, directives)| ast::Server { position, directives })
             .map(Item::Server),
-        rewrite::directives(),
-        try_files(),
-        ident("include").with(value()).skip(semi()).map(Item::Include),
+        ident("client_max_body_size").with(value()).skip(semi())
+            .map(Item::ClientMaxBodySize),
+        ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
         ident("ssl_certificate").with(value()).skip(semi())
             .map(Item::SslCertificate),
         ident("ssl_certificate_key").with(value()).skip(semi())
             .map(Item::SslCertificateKey),
+    ))
+}
+
+pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
+{
+    position()
+    .and(choice((
+        top_level(),
+        rewrite::directives(),
+        try_files(),
         location(),
         headers::directives(),
         server_name(),
         map(),
-        ident("client_max_body_size").with(value()).skip(semi())
-            .map(Item::ClientMaxBodySize),
         proxy::directives(),
         gzip::directives(),
         core::directives(),
@@ -307,7 +336,6 @@ pub fn directive<'a>() -> impl Parser<Output=Directive, Input=TokenStream<'a>>
         real_ip::directives(),
         openresty(),
         // it's own module
-        ident("empty_gif").skip(semi()).map(|_| Item::EmptyGif),
         ident("index").with(many(value())).skip(semi())
             .map(Item::Index),
     )))
