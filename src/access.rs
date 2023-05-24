@@ -5,9 +5,9 @@ use combine::{choice};
 use combine::error::StreamError;
 use combine::easy::Error;
 
-use ast::{Item, Source};
-use helpers::{semi, ident, string};
-use tokenizer::{TokenStream, Token};
+use crate::ast::{Item, Source};
+use crate::helpers::{semi, ident, string};
+use crate::tokenizer::{TokenStream, Token};
 
 
 fn parse_source<'a>(val: Token<'a>)

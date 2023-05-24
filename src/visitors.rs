@@ -1,8 +1,8 @@
 //! Various visitors for working with AST
 use std::collections::VecDeque;
 
-use ast::Directive;
-use value::Value;
+use crate::ast::Directive;
+use crate::value::Value;
 
 
 /// A deep iterator over all directives in configuration file or a part of it

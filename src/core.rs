@@ -5,18 +5,18 @@ use combine::{choice, optional};
 use combine::error::StreamError;
 use combine::easy::Error;
 
-use ast::{self, Item};
-use grammar::{value, bool, block, Code};
-use helpers::{semi, ident, string, prefix};
-use tokenizer::{TokenStream, Token};
-use value::Value;
+use crate::ast::{self, Item};
+use crate::grammar::{value, bool, block, Code};
+use crate::helpers::{semi, ident, string, prefix};
+use crate::tokenizer::{TokenStream, Token};
+use crate::value::Value;
 
 
 fn error_page<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
-    use ast::ErrorPageResponse;
-    use value::Item::*;
+    use crate::ast::ErrorPageResponse;
+    use crate::value::Item::*;
 
     fn lit<'a, 'x>(val: &'a Value) -> Result<&'a str, Error<Token<'x>, Token<'x>>> {
         if val.data.is_empty() {
@@ -68,7 +68,7 @@ fn error_page<'a>()
             codes.push(Code::parse(lit(&code)?)?.as_code());
         }
 
-        Ok(Item::ErrorPage(::ast::ErrorPage {
+        Ok(Item::ErrorPage(ast::ErrorPage {
             codes,
             response_code,
             uri,

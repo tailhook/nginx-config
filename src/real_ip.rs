@@ -4,10 +4,10 @@ use combine::{choice, Parser};
 use combine::error::StreamError;
 use combine::easy::Error;
 
-use ast::{Item, RealIpFrom};
-use grammar::{value, bool};
-use helpers::{semi, ident, string};
-use tokenizer::{TokenStream, Token};
+use crate::ast::{Item, RealIpFrom};
+use crate::grammar::{value, bool};
+use crate::helpers::{semi, ident, string};
+use crate::tokenizer::{TokenStream, Token};
 
 
 fn parse_source<'a>(val: Token<'a>)

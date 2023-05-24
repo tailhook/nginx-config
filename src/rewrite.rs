@@ -3,19 +3,19 @@ use combine::{choice, optional, many1, position};
 use combine::error::StreamError;
 use combine::easy::Error;
 
-use ast::{self, Item};
-use grammar::{value, block, Code};
-use helpers::{semi, ident, string};
-use position::Pos;
-use tokenizer::{TokenStream, Token};
-use value::{Value};
+use crate::ast::{self, Item};
+use crate::grammar::{value, block, Code};
+use crate::helpers::{semi, ident, string};
+use crate::position::Pos;
+use crate::tokenizer::{TokenStream, Token};
+use crate::value::{Value};
 
 
 fn rewrite<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
-    use ast::RewriteFlag::*;
-    use ast::Item::Rewrite;
+    use crate::ast::RewriteFlag::*;
+    use crate::ast::Item::Rewrite;
 
     ident("rewrite")
     .with(string())
@@ -58,8 +58,8 @@ fn set<'a>()
 fn return_directive<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>
 {
-    use ast::Return::*;
-    use value::Item::*;
+    use crate::ast::Return::*;
+    use crate::value::Item::*;
 
     fn lit<'a, 'x>(val: &'a Value) -> Result<&'a str, Error<Token<'x>, Token<'x>>> {
         if val.data.is_empty() {
@@ -179,7 +179,7 @@ fn parse_unary<'a>(mut v: Vec<&str>, position: Pos)
 fn parse_binary<'a>(mut v: Vec<&str>, position: Pos)
     -> Result<ast::IfCondition, Error<Token<'a>, Token<'a>>>
 {
-    use ast::IfCondition::*;
+    use crate::ast::IfCondition::*;
 
     let left = Value::parse_str(position, v.remove(0))?;
     if v.len() == 0 {

@@ -4,9 +4,9 @@ use std::str::FromStr;
 use combine::easy::Error;
 use combine::error::StreamError;
 
-use format::{Displayable, Formatter};
-use position::Pos;
-use tokenizer::Token;
+use crate::format::{Displayable, Formatter};
+use crate::position::Pos;
+use crate::tokenizer::Token;
 
 /// Generic string value
 ///

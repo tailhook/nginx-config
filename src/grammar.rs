@@ -4,21 +4,21 @@ use combine::combinator::{opaque, no_partial, FnOpaque};
 use combine::error::StreamError;
 use combine::easy::Error;
 
-use ast::{self, Main, Directive, Item};
-use error::ParseError;
-use helpers::{semi, ident, text, string};
-use position::Pos;
-use tokenizer::{TokenStream, Token};
-use value::Value;
+use crate::ast::{self, Main, Directive, Item};
+use crate::error::ParseError;
+use crate::helpers::{semi, ident, text, string};
+use crate::position::Pos;
+use crate::tokenizer::{TokenStream, Token};
+use crate::value::Value;
 
-use access;
-use core;
-use gzip;
-use headers;
-use proxy;
-use rewrite;
-use log;
-use real_ip;
+use crate::access;
+use crate::core;
+use crate::gzip;
+use crate::headers;
+use crate::proxy;
+use crate::rewrite;
+use crate::log;
+use crate::real_ip;
 
 
 pub enum Code {
@@ -75,8 +75,8 @@ pub fn server_name<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
 
 
 pub fn map<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
-    use tokenizer::Kind::{BlockStart, BlockEnd};
-    use helpers::kind;
+    use crate::tokenizer::Kind::{BlockStart, BlockEnd};
+    use crate::helpers::kind;
     enum Tok {
         Hostnames,
         Volatile,
@@ -108,7 +108,7 @@ pub fn map<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
     )).skip(semi())))
     .skip(kind(BlockEnd))
     .map(|((expression, variable), vec): ((_, _), Vec<Tok>)| {
-        let mut res = ::ast::Map {
+        let mut res = ast::Map {
             variable, expression,
             default: None,
             hostnames: false,
@@ -155,8 +155,8 @@ pub fn map<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
 pub fn block<'a>()
     -> FnOpaque<TokenStream<'a>, ((Pos, Pos), Vec<Directive>)>
 {
-    use tokenizer::Kind::{BlockStart, BlockEnd};
-    use helpers::kind;
+    use crate::tokenizer::Kind::{BlockStart, BlockEnd};
+    use crate::helpers::kind;
     opaque(|f| {
         f(&mut no_partial((
                 position(),
@@ -217,9 +217,9 @@ impl Code {
 
 
 pub fn try_files<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
-    use ast::TryFilesLastOption::*;
-    use ast::Item::TryFiles;
-    use value::Item::*;
+    use crate::ast::TryFilesLastOption::*;
+    use crate::ast::Item::TryFiles;
+    use crate::value::Item::*;
 
     ident("try_files")
     .with(many1(value()))
@@ -235,7 +235,7 @@ pub fn try_files<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
             }
             _ => Uri(last.clone()),
         };
-        Ok(TryFiles(::ast::TryFiles {
+        Ok(TryFiles(ast::TryFiles {
             options: v,
             last_option: last,
         }))
@@ -244,7 +244,7 @@ pub fn try_files<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
 
 
 pub fn openresty<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
-    use ast::Item::*;
+    use crate::ast::Item::*;
     choice((
         ident("rewrite_by_lua_file").with(value()).skip(semi())
             .map(Item::RewriteByLuaFile),

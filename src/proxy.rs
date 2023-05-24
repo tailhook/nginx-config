@@ -3,10 +3,10 @@ use combine::{choice, many1};
 use combine::error::StreamError;
 use combine::easy::Error;
 
-use ast::{self, Item};
-use helpers::{semi, ident, string};
-use tokenizer::TokenStream;
-use grammar::{value, bool, Code};
+use crate::ast::{self, Item};
+use crate::helpers::{semi, ident, string};
+use crate::tokenizer::TokenStream;
+use crate::grammar::{value, bool, Code};
 
 
 pub fn directives<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
@@ -25,8 +25,8 @@ pub fn directives<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
         ident("proxy_cache_valid")
             .with(many1(value()))
             .and_then(|mut v: Vec<_>| {
-                use ast::ProxyCacheValid::*;
-                use value::Item::*;
+                use crate::ast::ProxyCacheValid::*;
+                use crate::value::Item::*;
                 let time = v.pop().unwrap();
                 if v.len() == 0 {
                     return Ok(Normal(time));

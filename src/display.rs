@@ -1,8 +1,8 @@
-use ast;
+use crate::ast;
 use std::fmt;
-use format::{Displayable, Formatter, Style};
+use crate::format::{Displayable, Formatter, Style};
 
-use value;
+use crate::value;
 
 impl Displayable for ast::Main {
     fn display(&self, f: &mut Formatter) {
@@ -332,7 +332,7 @@ impl Displayable for ast::Item {
                 }
                 f.end();
             }
-            Expires(::ast::Expires { modified, ref value }) => {
+            Expires(ast::Expires { modified, ref value }) => {
                 f.indent();
                 f.write("expires ");
                 if modified {

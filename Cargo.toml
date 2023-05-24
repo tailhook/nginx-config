@@ -1,4 +1,5 @@
 [package]
+edition = "2021"
 name = "nginx-config"
 description = """
     A parser, AST and formatter for nginx configuration files.

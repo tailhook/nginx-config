@@ -4,9 +4,10 @@
 use std::path::PathBuf;
 use std::net::{SocketAddr, IpAddr};
 
-pub use value::{Value};
-use position::Pos;
-use visitors::{DirectiveIter};
+pub use crate::value::{Value};
+use crate::position::Pos;
+use crate::visitors::{DirectiveIter};
+use crate::ast;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -724,13 +725,13 @@ impl Item {
             Expires(self::Expires { ref mut value, .. }) => f(value),
             Root(ref mut v) => f(v),
             Alias(ref mut v) => f(v),
-            ErrorPage(::ast::ErrorPage { ref mut uri, .. }) => f(uri),
+            ErrorPage(ast::ErrorPage { ref mut uri, .. }) => f(uri),
             DefaultType(ref mut v) => f(v),
             ErrorLog { ref mut file, .. } => f(file),
             Rewrite(ref mut rw) => f(&mut rw.replacement),
-            Return(::ast::Return::Redirect { ref mut url, .. }) => f(url),
-            Return(::ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
-            Return(::ast::Return::Text { text: None, .. }) => {},
+            Return(ast::Return::Redirect { ref mut url, .. }) => f(url),
+            Return(ast::Return::Text { text: Some(ref mut t), .. }) => f(t),
+            Return(ast::Return::Text { text: None, .. }) => {},
             If(self::If { ref mut condition, .. }) => {
                 use self::IfCondition::*;
                 match condition {
@@ -776,7 +777,7 @@ impl Item {
             SslCertificateKey(ref mut v) => f(v),
             ServerName(_) => {},
             Set { ref mut value, .. } => f(value),
-            Map(::ast::Map {
+            Map(ast::Map {
                 ref mut expression,
                 ref mut default,
                 ref mut patterns,
@@ -807,8 +808,8 @@ impl Item {
             Allow(..) => {},
             Deny(..) => {},
             // log module
-            AccessLog(::ast::AccessLog::Off) => {},
-            AccessLog(::ast::AccessLog::On(ref mut lg)) => {
+            AccessLog(ast::AccessLog::Off) => {},
+            AccessLog(ast::AccessLog::On(ref mut lg)) => {
                 f(&mut lg.path);
                 lg.condition.as_mut().map(f);
             },

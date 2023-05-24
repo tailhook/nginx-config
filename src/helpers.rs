@@ -4,8 +4,8 @@ use combine::{Parser, ConsumedResult, satisfy, StreamOnce};
 use combine::error::{Tracked};
 use combine::stream::easy::{Error, Errors, Info};
 
-use tokenizer::{TokenStream, Kind, Token};
-use position::Pos;
+use crate::tokenizer::{TokenStream, Kind, Token};
+use crate::position::Pos;
 
 
 #[derive(Debug, Clone)]
