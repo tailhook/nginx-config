@@ -1,10 +1,10 @@
 use combine::{Parser, optional};
 use combine::{choice};
 
-use ast::{self, Item};
-use grammar::{value};
-use helpers::{semi, ident};
-use tokenizer::{TokenStream};
+use crate::ast::{self, Item};
+use crate::grammar::{value};
+use crate::helpers::{semi, ident};
+use crate::tokenizer::{TokenStream};
 
 fn add_header<'a>()
     -> impl Parser<Output=Item, Input=TokenStream<'a>>

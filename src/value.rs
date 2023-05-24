@@ -4,9 +4,9 @@ use std::str::FromStr;
 use combine::easy::Error;
 use combine::error::StreamError;
 
-use format::{Displayable, Formatter};
-use position::Pos;
-use tokenizer::Token;
+use crate::format::{Displayable, Formatter};
+use crate::position::Pos;
+use crate::tokenizer::Token;
 
 /// Generic string value
 ///
@@ -73,7 +73,7 @@ impl Value {
                         '{' => {
                             while let Some(&(_, c)) = chiter.peek() {
                                 match c {
-                                    'a'...'z' | 'A'...'Z' | '_' | '0'...'9'
+                                    'a'..='z' | 'A'..='Z' | '_' | '0'..='9'
                                     => chiter.next(),
                                     '}' => break,
                                     _ => {
@@ -87,10 +87,10 @@ impl Value {
                                 value[vstart+1..now].to_string()));
                             cur_slice = now+1;
                         }
-                        'a'...'z' | 'A'...'Z' | '_' | '0'...'9' => {
+                        'a'..='z' | 'A'..='Z' | '_' | '0'..='9' => {
                             while let Some(&(_, c)) = chiter.peek() {
                                 match c {
-                                    'a'...'z' | 'A'...'Z' | '_' | '0'...'9'
+                                    'a'..='z' | 'A'..='Z' | '_' | '0'..='9'
                                     => chiter.next(),
                                     _ => break,
                                 };
@@ -159,10 +159,10 @@ impl Value {
                         '{' => {
                             unimplemented!();
                         }
-                        'a'...'z' | 'A'...'Z' | '_' | '0'...'9' => {
+                        'a'..='z' | 'A'..='Z' | '_' | '0'..='9' => {
                             while let Some(&(_, c)) = chiter.peek() {
                                 match c {
-                                    'a'...'z' | 'A'...'Z' | '_' | '0'...'9'
+                                    'a'..='z' | 'A'..='Z' | '_' | '0'..='9'
                                     => chiter.next(),
                                     _ => break,
                                 };

@@ -1,13 +1,13 @@
 use combine::{many1, Parser};
 use combine::{choice};
 
-use ast::{Item};
-use grammar::bool;
-use helpers::{semi, ident};
-use tokenizer::TokenStream;
+use crate::ast::{Item};
+use crate::grammar::bool;
+use crate::helpers::{semi, ident};
+use crate::tokenizer::TokenStream;
 
 pub fn gzip_static<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
-    use ast::GzipStatic::*;
+    use crate::ast::GzipStatic::*;
     ident("gzip_static").with(choice((
         ident("on").map(|_| On),
         ident("off").map(|_| Off),
@@ -18,7 +18,7 @@ pub fn gzip_static<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
 }
 
 pub fn gzip_proxied<'a>() -> impl Parser<Output=Item, Input=TokenStream<'a>> {
-    use ast::GzipProxied::*;
+    use crate::ast::GzipProxied::*;
     ident("gzip_proxied").with(many1(choice((
         ident("off").map(|_| Off),
         ident("expired").map(|_| Expired),
